@@ -43,7 +43,8 @@ MONGODB_URI=mongodb://localhost:27017/gift_shop_db
 JWT_SECRET=your_jwt_secret_key_here
 ```
 
-**Lưu ý:** 
+**Lưu ý:**
+
 - Nếu sử dụng MongoDB Atlas, thay `MONGODB_URI` bằng connection string của bạn
 - Đổi `JWT_SECRET` thành một chuỗi bảo mật ngẫu nhiên
 
@@ -60,6 +61,7 @@ sudo systemctl start mongod
 ```
 
 **Nếu dùng MongoDB Atlas:**
+
 - Tạo cluster miễn phí tại [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
 - Lấy connection string và cập nhật vào `.env`
 
@@ -82,11 +84,13 @@ Chi tiết đầy đủ về testing xem tại: [API_TESTING.md](./API_TESTING.m
 ### Quick Test
 
 **1. Health Check:**
+
 ```bash
 curl http://localhost:5001/health
 ```
 
 **2. Register:**
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/register \
   -H "Content-Type: application/json" \
@@ -94,6 +98,7 @@ curl -X POST http://localhost:5001/api/auth/register \
 ```
 
 **3. Login:**
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/login \
   -H "Content-Type: application/json" \
@@ -127,6 +132,7 @@ BackEnd/
 ## 🗺️ Roadmap - Các tính năng cần phát triển
 
 ### Phase 1: Xác thực & Người dùng ✅ (Hoàn thành)
+
 - [x] Setup Express + MongoDB
 - [x] User Model (Customer, Admin)
 - [x] Authentication (Register, Login, JWT)
@@ -134,6 +140,7 @@ BackEnd/
 - [ ] Password reset/forgot (TODO)
 
 ### Phase 2: Quản lý sản phẩm
+
 - [ ] Product Model (name, description, price, images, category, stock)
 - [ ] CRUD operations cho products
 - [ ] Upload hình ảnh sản phẩm
@@ -141,12 +148,14 @@ BackEnd/
 - [ ] Product categories
 
 ### Phase 3: Giỏ hàng & Wishlist
+
 - [ ] Cart Model
 - [ ] Add/Remove/Update cart items
 - [ ] Wishlist functionality
 - [ ] Cart persistence
 
 ### Phase 4: Đơn hàng & Thanh toán
+
 - [ ] Order Model
 - [ ] Checkout process
 - [ ] Payment integration (VNPay, MoMo, hoặc Stripe)
@@ -154,6 +163,7 @@ BackEnd/
 - [ ] Email notifications
 
 ### Phase 5: Admin Panel
+
 - [ ] Admin dashboard statistics
 - [ ] User management
 - [ ] Product management
@@ -161,6 +171,7 @@ BackEnd/
 - [ ] Revenue reports
 
 ### Phase 6: Tính năng nâng cao
+
 - [ ] Reviews & Ratings
 - [ ] Discount codes/Coupons
 - [ ] Shipping calculation
@@ -171,6 +182,7 @@ BackEnd/
 ## 📝 API Endpoints
 
 ### Authentication ✅ (Hoàn thành)
+
 - `POST /api/auth/register` - Đăng ký tài khoản mới
 - `POST /api/auth/login` - Đăng nhập
 - `POST /api/auth/logout` - Đăng xuất (Protected)
@@ -178,6 +190,7 @@ BackEnd/
 - `PUT /api/auth/profile` - Cập nhật thông tin user (Protected)
 
 ### Products
+
 - `GET /api/products` - Lấy danh sách sản phẩm
 - `GET /api/products/:id` - Lấy chi tiết sản phẩm
 - `POST /api/products` - Tạo sản phẩm (Admin)
@@ -185,12 +198,14 @@ BackEnd/
 - `DELETE /api/products/:id` - Xóa sản phẩm (Admin)
 
 ### Cart
+
 - `GET /api/cart` - Lấy giỏ hàng
 - `POST /api/cart` - Thêm vào giỏ
 - `PUT /api/cart/:id` - Cập nhật số lượng
 - `DELETE /api/cart/:id` - Xóa khỏi giỏ
 
 ### Orders
+
 - `GET /api/orders` - Lấy danh sách đơn hàng
 - `GET /api/orders/:id` - Chi tiết đơn hàng
 - `POST /api/orders` - Tạo đơn hàng
@@ -207,6 +222,7 @@ npm test         # Chạy tests (TODO)
 ## 🤝 Đóng góp
 
 Đây là dự án nhóm. Mọi thành viên vui lòng:
+
 1. Tạo branch mới cho feature: `git checkout -b feature/ten-feature`
 2. Commit thay đổi: `git commit -m 'Add some feature'`
 3. Push lên branch: `git push origin feature/ten-feature`

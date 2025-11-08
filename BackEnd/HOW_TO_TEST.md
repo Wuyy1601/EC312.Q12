@@ -3,6 +3,7 @@
 ## Bước 1: Start Server
 
 Mở terminal và chạy:
+
 ```bash
 npm run dev
 ```
@@ -27,6 +28,7 @@ npm run dev
 ## Bước 3: Test bằng Terminal (Cần 2 terminal)
 
 ### Terminal 1 (Server - Để chạy):
+
 ```bash
 npm run dev
 ```
@@ -34,11 +36,13 @@ npm run dev
 ### Terminal 2 (Test - Mở terminal mới):
 
 **Test 1: Health Check**
+
 ```bash
 curl http://localhost:5001/health
 ```
 
 **Test 2: Register**
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/register -H "Content-Type: application/json" -d "{\"name\":\"Test User\",\"email\":\"test123@example.com\",\"password\":\"123456\",\"phone\":\"0901234567\"}"
 ```
@@ -46,11 +50,13 @@ curl -X POST http://localhost:5001/api/auth/register -H "Content-Type: applicati
 **Lưu token từ response để dùng cho test tiếp**
 
 **Test 3: Login**
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/login -H "Content-Type: application/json" -d "{\"email\":\"test123@example.com\",\"password\":\"123456\"}"
 ```
 
 **Test 4: Get Profile (Thay YOUR_TOKEN)**
+
 ```bash
 curl -X GET http://localhost:5001/api/auth/profile -H "Authorization: Bearer YOUR_TOKEN"
 ```
@@ -60,10 +66,13 @@ curl -X GET http://localhost:5001/api/auth/profile -H "Authorization: Bearer YOU
 ## ⚠️ Lỗi thường gặp
 
 ### "Connection refused" hoặc "ECONNREFUSED"
+
 → **Giải pháp:** Server chưa chạy. Mở terminal và chạy `npm run dev`
 
 ### "Port 5001 already in use"
-→ **Giải pháp:** 
+
+→ **Giải pháp:**
+
 ```bash
 # Tìm process đang dùng port
 netstat -ano | findstr :5001
@@ -73,7 +82,9 @@ taskkill /PID <PID> /F
 ```
 
 ### MongoDB connection failed
-→ **Giải pháp:** 
+
+→ **Giải pháp:**
+
 ```bash
 # Start MongoDB
 net start MongoDB
@@ -84,6 +95,7 @@ net start MongoDB
 ## 📹 Video Demo (Nên làm theo)
 
 **Với Postman:**
+
 1. Server đang chạy ở terminal 1
 2. Mở Postman
 3. Import file `postman-collection.json`

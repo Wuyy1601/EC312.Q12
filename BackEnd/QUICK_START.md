@@ -3,20 +3,23 @@
 ## ✅ ĐÃ SETUP XONG
 
 ### 1. Server đang chạy
+
 - **URL**: http://localhost:5001
 - **MongoDB**: Connected ✅
 - **Status**: Running with nodemon (auto-restart)
 
 ### 2. Authentication API hoạt động
-| Endpoint | Method | Auth | Mô tả |
-|----------|--------|------|-------|
-| `/api/auth/register` | POST | ❌ | Đăng ký tài khoản |
-| `/api/auth/login` | POST | ❌ | Đăng nhập |
-| `/api/auth/profile` | GET | ✅ | Xem profile |
-| `/api/auth/profile` | PUT | ✅ | Cập nhật profile |
-| `/api/auth/logout` | POST | ✅ | Đăng xuất |
+
+| Endpoint             | Method | Auth | Mô tả             |
+| -------------------- | ------ | ---- | ----------------- |
+| `/api/auth/register` | POST   | ❌   | Đăng ký tài khoản |
+| `/api/auth/login`    | POST   | ❌   | Đăng nhập         |
+| `/api/auth/profile`  | GET    | ✅   | Xem profile       |
+| `/api/auth/profile`  | PUT    | ✅   | Cập nhật profile  |
+| `/api/auth/logout`   | POST   | ✅   | Đăng xuất         |
 
 ### 3. Files đã tạo
+
 ```
 ✅ src/server.js              - Main server
 ✅ src/config/database.js     - MongoDB connection
@@ -39,6 +42,7 @@
 ## 🚀 TEST NGAY (Copy & Paste)
 
 ### 1️⃣ Đăng ký user mới
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/register ^
   -H "Content-Type: application/json" ^
@@ -46,6 +50,7 @@ curl -X POST http://localhost:5001/api/auth/register ^
 ```
 
 ### 2️⃣ Đăng nhập
+
 ```bash
 curl -X POST http://localhost:5001/api/auth/login ^
   -H "Content-Type: application/json" ^
@@ -55,6 +60,7 @@ curl -X POST http://localhost:5001/api/auth/login ^
 **Lưu lại TOKEN từ response để dùng ở bước 3**
 
 ### 3️⃣ Xem profile (thay YOUR_TOKEN)
+
 ```bash
 curl -X GET http://localhost:5001/api/auth/profile ^
   -H "Authorization: Bearer YOUR_TOKEN"
@@ -75,10 +81,11 @@ curl -X GET http://localhost:5001/api/auth/profile ^
 ## 🎯 BƯỚC TIẾP THEO - CHỌN 1
 
 ### Option A: Làm Product Management
+
 ```bash
 # Cần tạo:
 - src/models/Product.js
-- src/models/Category.js  
+- src/models/Category.js
 - src/controllers/product.controller.js
 - src/routes/product.routes.js
 
@@ -91,6 +98,7 @@ curl -X GET http://localhost:5001/api/auth/profile ^
 ```
 
 ### Option B: Làm Shopping Cart
+
 ```bash
 # Cần tạo:
 - src/models/Cart.js
@@ -106,6 +114,7 @@ curl -X GET http://localhost:5001/api/auth/profile ^
 ```
 
 ### Option C: Làm Order Management
+
 ```bash
 # Cần tạo:
 - src/models/Order.js
@@ -170,6 +179,7 @@ npm install package-name
 ## 📞 KHI GẶP LỖI
 
 ### Lỗi: Port 5001 already in use
+
 ```bash
 # Windows - Kill process
 netstat -ano | findstr :5001
@@ -180,6 +190,7 @@ PORT=5002
 ```
 
 ### Lỗi: MongoDB connection failed
+
 ```bash
 # Khởi động MongoDB
 net start MongoDB
@@ -189,6 +200,7 @@ net start MongoDB
 ```
 
 ### Lỗi: Module not found
+
 ```bash
 # Cài lại dependencies
 npm install
