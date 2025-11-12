@@ -1,18 +1,24 @@
 import mongoose from "mongoose";
 import { userConnection } from "../config/database.js";
 
+// Định nghĩa schema (cấu trúc dữ liệu) cho User
 const userSchema = new mongoose.Schema(
   {
+    // Tên đăng nhập
     username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
+      type: String, // Kiểu dữ liệu: chuỗi
+      required: true, // Bắt buộc phải có
+      unique: true, // Không được trùng
+      trim: true, // Tự động xóa khoảng trắng đầu/cuối
     },
+    // Mật khẩu (sẽ được hash bởi middleware trước khi lưu)
     password: {
       type: String,
       required: true,
+      select: false, // Không tự động trả về password khi query (bảo mật)
+      // Nếu muốn lấy password phải dùng: .select("+password")
     },
+    // Email
     email: {
       type: String,
       required: true,
@@ -21,11 +27,16 @@ const userSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // Tự động thêm createdAt và updatedAt
+    // Tự động thêm 2 field:
+    // - createdAt: thời gian tạo
+    // - updatedAt: thời gian cập nhật gần nhất
+    timestamps: true,
   }
 );
 
-// Dùng userConnection thay vì mongoose.model (vì mongoose.model default connection tới 1 db duy nhất)
+// Tạo Model từ schema
+// Dùng userConnection để lưu vào database "users"
+// (không dùng mongoose.model vì cần kết nối riêng cho nhiều DB)
 const User = userConnection.model("User", userSchema);
 
 export default User;
