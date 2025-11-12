@@ -20,17 +20,19 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// 2. Lấy user theo ID (cho admin xem chi tiết)
+// Lấy thông tin user theo ID
 export const getUserById = async (req, res) => {
   try {
+    // Lấy ID từ tham số URL
     const { id } = req.params;
 
+    // Tìm user theo ID, không trả về password
     const user = await User.findById(id).select("-password");
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Không tìm thấy user",
+        message: "Không tìm thấy user với ID đã cho",
       });
     }
 
@@ -39,10 +41,10 @@ export const getUserById = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    console.error("Lỗi lấy user:", error);
+    console.error("Lỗi lấy user theo ID:", error);
     res.status(500).json({
       success: false,
-      message: "Lỗi server",
+      message: "Lỗi server khi lấy thông tin user",
       error: error.message,
     });
   }
