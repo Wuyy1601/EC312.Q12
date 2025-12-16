@@ -1,0 +1,243 @@
+.homepage {
+  width: 100%;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Banner Section */
+.banner-section {
+  margin-bottom: 2rem;
+}
+
+.banner-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.banner-item {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.banner-item:hover {
+  transform: translateY(-5px);
+}
+
+.banner-item img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+/* Categories Section */
+.categories-section {
+  margin-bottom: 2rem;
+}
+
+.categories-grid {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.category-item:hover {
+  transform: scale(1.05);
+}
+
+.category-item img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e8b4d9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-item p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  font-weight: 500;
+}
+
+/* New Arrivals Section with Horizontal Scroll */
+.new-arrivals-section {
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-title-group {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  color: #8b1538;
+  font-weight: bold;
+  margin: 0;
+}
+
+.countdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.countdown-box {
+  background: #8b1538;
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  min-width: 45px;
+  text-align: center;
+}
+
+.countdown-value {
+  display: block;
+}
+
+.countdown-separator {
+  color: #8b1538;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.scroll-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.scroll-btn {
+  background: #e8b4d9;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.scroll-btn:hover {
+  background: #8b1538;
+  transform: scale(1.1);
+}
+
+.products-scroll-container {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.products-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Featured Products Section with Horizontal Scroll */
+.featured-section {
+  margin-bottom: 3rem;
+  padding: 2rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .banner-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .banner-container {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .banner-item img {
+    height: 200px;
+  }
+
+  .categories-grid {
+    gap: 1rem;
+  }
+
+  .category-item img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .section-header h2,
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .product-card {
+    min-width: 200px;
+  }
+
+  .product-image {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-card {
+    min-width: 150px;
+  }
+
+  .scroll-btn {
+    width: 35px;
+    height: 35px;
+  }
+}
