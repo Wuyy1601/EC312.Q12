@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server đang chạy tại port ${PORT}`);
+  console.log(` Server đang chạy tại port ${PORT}`);
 });
 
 export default app;

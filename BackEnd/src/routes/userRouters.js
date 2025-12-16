@@ -1,5 +1,6 @@
 import express from "express";
-import { getAllUsers, getUserById } from "../controllers/userController.js";
+import { getAllUsers, getUserById , updateUserProfile } from "../controllers/userController.js";
+import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -9,7 +10,10 @@ router.get("/", getAllUsers);
 // GET /api/users/:id - Lấy thông tin user theo ID
 router.get("/:id", getUserById);
 
+// PUT /api/users/profile - Cập nhật profile (yêu cầu authentication)
+router.put("/profile", authenticateToken, updateUserProfile);
+
 export default router;
 
-// PUT /api/users/:id - Cập nhật thông tin user theo ID
+
 // DELETE /api/users/:id - Xóa user theo ID

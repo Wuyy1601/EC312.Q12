@@ -27,7 +27,7 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({
         // 401 = Unauthorized (chưa xác thực)
         success: false,
-        message: "Email hoặc password không đúng",
+        message: "Email không đúng",
         // Không nói cụ thể cái nào sai để tăng bảo mật
         // (tránh hacker biết email có tồn tại hay không)
       });
@@ -40,7 +40,7 @@ export const loginUser = async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(401).json({
         success: false,
-        message: "Email hoặc password không đúng",
+        message: " password không đúng",
       });
     }
 
