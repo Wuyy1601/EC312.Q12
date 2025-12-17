@@ -6,6 +6,9 @@ import {
   paymentWebhook,
   checkPaymentStatus,
   simulatePayment,
+  momoIPN,
+  vnpayIPN,
+  vnpayReturn,
 } from "../controllers/orderController.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 
@@ -14,17 +17,20 @@ const router = express.Router();
 // Route tạo đơn hàng - cho phép cả guest và logged-in user
 router.post("/", createOrder);
 
+// Webhook routes (phải đặt TRƯỚC dynamic routes)
+router.post("/webhook", paymentWebhook); // SePay (Bank QR)
+router.post("/momo-ipn", momoIPN); // MoMo IPN
+router.get("/vnpay-ipn", vnpayIPN); // VNPay IPN callback
+router.get("/vnpay-return", vnpayReturn); // VNPay redirect back
+
 // Routes cần đăng nhập
-router.get("/my-orders", authMiddleware, getMyOrders); // Lấy danh sách đơn hàng của user
+router.get("/my-orders", authMiddleware, getMyOrders);
 
-// Routes public
-router.get("/:orderCode", getOrder); // Lấy chi tiết đơn hàng
-router.get("/:orderCode/payment-status", checkPaymentStatus); // Check trạng thái thanh toán
-
-// Webhook từ SePay
-router.post("/webhook", paymentWebhook);
-
-// API giả lập thanh toán (để test)
+// Dynamic routes (phải đặt SAU các routes cụ thể)
+router.get("/:orderCode", getOrder);
+router.get("/:orderCode/payment-status", checkPaymentStatus);
 router.post("/:orderCode/simulate-payment", simulatePayment);
 
 export default router;
+
+

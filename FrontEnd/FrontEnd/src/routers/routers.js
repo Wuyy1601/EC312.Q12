@@ -12,6 +12,11 @@ const routers = [
     path: "/checkout",
     component: lazy(() => import("@pages/CheckoutPage")),
   },
+  {
+    path: "/payment-result",
+    component: lazy(() => import("@pages/PaymentResultPage")),
+  },
 ];
 
 export default routers;
+

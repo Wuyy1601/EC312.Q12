@@ -105,8 +105,11 @@ const CheckoutPage = () => {
       if (paymentMethod === "cod") {
         setStep(3); // COD thì thành công luôn
         localStorage.removeItem("cartItems"); // Xóa giỏ hàng
+      } else if (data.paymentInfo?.payUrl) {
+        // MoMo: Chuyển hướng sang trang thanh toán MoMo
+        window.location.href = data.paymentInfo.payUrl;
       } else {
-        setStep(2); // Hiển thị QR
+        setStep(2); // Hiển thị Bank QR
       }
     } catch (err) {
       setError(err.message);
