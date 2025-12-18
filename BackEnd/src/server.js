@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // Import service apps
-import authApp from "./services/auth/index.js";
+import userApp from "./services/user/index.js";
 import orderApp from "./services/order/index.js";
 import productApp from "./services/product/index.js";
 
@@ -36,9 +36,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // API GATEWAY - Route to services
 // =============================================
 
-// Mount Auth Service
-app.use("/api/auth", authApp);
-app.use(authApp); // Also mount root for /api/auth/* paths
+// Mount User Service (vẫn dùng /api/auth cho backward compatibility)
+app.use("/api/auth", userApp);
+app.use(userApp);
 
 // Mount Order Service
 app.use(orderApp);

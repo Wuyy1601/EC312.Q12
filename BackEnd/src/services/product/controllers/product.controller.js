@@ -8,10 +8,11 @@ const __dirname = path.dirname(__filename);
 // Get all products
 export const getAllProducts = async (req, res) => {
   try {
-    const { category, search, minPrice, maxPrice } = req.query;
+    const { category, search, minPrice, maxPrice, isBundle } = req.query;
     let query = { isActive: true };
 
     if (category) query.category = category;
+    if (isBundle !== undefined) query.isBundle = isBundle === "true";
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) query.price.$gte = Number(minPrice);
@@ -20,9 +21,9 @@ export const getAllProducts = async (req, res) => {
 
     let products;
     if (search) {
-      products = await Product.find({ ...query, $text: { $search: search } });
+      products = await Product.find({ ...query, $text: { $search: search } }).populate("bundleItems.product", "name price image");
     } else {
-      products = await Product.find(query).sort({ createdAt: -1 });
+      products = await Product.find(query).populate("bundleItems.product", "name price image").sort({ createdAt: -1 });
     }
 
     res.json({ success: true, count: products.length, data: products });
@@ -34,7 +35,7 @@ export const getAllProducts = async (req, res) => {
 // Get product by ID
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).populate("bundleItems.product", "name price image description");
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
     res.json({ success: true, data: product });
   } catch (error) {
@@ -42,14 +43,14 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// Create product (Admin) - with file upload
+// Create product (Admin) - with file upload and bundle support
 export const createProduct = async (req, res) => {
   try {
     console.log("📦 Creating product...");
     console.log("Body:", req.body);
     console.log("Files:", req.files?.length || 0);
 
-    const { name, price, description, category, stock } = req.body;
+    const { name, price, description, category, stock, isBundle, bundleItems } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({ success: false, message: "Tên và giá là bắt buộc" });
@@ -58,7 +59,17 @@ export const createProduct = async (req, res) => {
     // Lấy URLs của các ảnh đã upload
     const images = req.files?.map((file) => `/uploads/${file.filename}`) || [];
 
-    const product = await Product.create({
+    // Parse bundleItems nếu là string (từ FormData)
+    let parsedBundleItems = [];
+    if (bundleItems) {
+      try {
+        parsedBundleItems = typeof bundleItems === "string" ? JSON.parse(bundleItems) : bundleItems;
+      } catch (e) {
+        console.error("Error parsing bundleItems:", e);
+      }
+    }
+
+    const product = new Product({
       name,
       price: Number(price),
       description: description || "",
@@ -66,7 +77,11 @@ export const createProduct = async (req, res) => {
       stock: Number(stock) || 0,
       images,
       image: images[0] || "",
+      isBundle: isBundle === "true" || isBundle === true,
+      bundleItems: parsedBundleItems,
     });
+
+    await product.save();
 
     console.log("✅ Product created:", product._id);
     res.status(201).json({ success: true, message: "Tạo sản phẩm thành công", data: product });
@@ -76,11 +91,33 @@ export const createProduct = async (req, res) => {
   }
 };
 
-// Update product (Admin) - with file upload
+// Update product (Admin) - with file upload and bundle support
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, stock } = req.body;
-    const updates = { name, price: Number(price), description, category, stock: Number(stock) };
+    const { name, price, description, category, stock, isBundle, bundleItems } = req.body;
+    
+    // Parse bundleItems nếu là string
+    let parsedBundleItems = undefined;
+    if (bundleItems) {
+      try {
+        parsedBundleItems = typeof bundleItems === "string" ? JSON.parse(bundleItems) : bundleItems;
+      } catch (e) {
+        console.error("Error parsing bundleItems:", e);
+      }
+    }
+
+    const updates = {
+      name,
+      price: Number(price),
+      description,
+      category,
+      stock: Number(stock),
+      isBundle: isBundle === "true" || isBundle === true,
+    };
+
+    if (parsedBundleItems) {
+      updates.bundleItems = parsedBundleItems;
+    }
 
     // Nếu có upload ảnh mới
     if (req.files?.length > 0) {
@@ -89,8 +126,13 @@ export const updateProduct = async (req, res) => {
       updates.image = images[0];
     }
 
-    const product = await Product.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+    // Dùng save() thay vì findByIdAndUpdate để trigger pre-save hook
+    const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
+
+    Object.assign(product, updates);
+    await product.save();
+
     res.json({ success: true, message: "Cập nhật thành công", data: product });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
@@ -108,4 +150,16 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-export default { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct };
+// Get only single products (not bundles) - for bundle item selection
+export const getSingleProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ isActive: true, isBundle: { $ne: true } })
+      .select("name price image")
+      .sort({ name: 1 });
+    res.json({ success: true, data: products });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { getAllProducts, getProductById, createProduct, updateProduct, deleteProduct, getSingleProducts };

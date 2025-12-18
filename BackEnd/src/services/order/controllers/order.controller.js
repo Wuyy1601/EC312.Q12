@@ -1,14 +1,7 @@
 import Order from "../models/order.model.js";
-import {
-  createMomoPayment,
-  verifyMomoSignature,
-} from "../../momoService.js";
-import {
-  createVnpayPayment,
-  verifyVnpaySignature,
-  getVnpayResponseMessage,
-} from "../../vnpayService.js";
-import { sendOrderConfirmation, sendPaymentSuccess } from "../../emailService.js";
+import { createMomoPayment, verifyMomoSignature } from "../../payment/momoService.js";
+import { createVnpayPayment, verifyVnpaySignature, getVnpayResponseMessage } from "../../payment/vnpayService.js";
+import { sendOrderConfirmation, sendPaymentSuccess } from "../../notification/emailService.js";
 
 // Helper: Generate QR URL
 const generateQRUrl = (order) => {

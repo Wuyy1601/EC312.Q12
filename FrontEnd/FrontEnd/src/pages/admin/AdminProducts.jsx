@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrash, FaSearch, FaPlus, FaCloudUploadAlt } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch, FaPlus, FaCloudUploadAlt, FaGift, FaTimes } from "react-icons/fa";
 import "./AdminProducts.css";
 
 const API_URL = "http://localhost:5001";
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [singleProducts, setSingleProducts] = useState([]); // Products for bundle selection
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
@@ -13,8 +14,13 @@ const AdminProducts = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
 
+  // Bundle state
+  const [isBundle, setIsBundle] = useState(false);
+  const [bundleItems, setBundleItems] = useState([]);
+
   useEffect(() => {
     fetchProducts();
+    fetchSingleProducts();
   }, []);
 
   const fetchProducts = async () => {
@@ -29,13 +35,20 @@ const AdminProducts = () => {
     }
   };
 
+  const fetchSingleProducts = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/products/singles`);
+      const data = await res.json();
+      setSingleProducts(data.data || []);
+    } catch (error) {
+      console.error("Fetch single products error:", error);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
-
     try {
-      await fetch(`${API_URL}/api/products/${id}`, {
-        method: "DELETE",
-      });
+      await fetch(`${API_URL}/api/products/${id}`, { method: "DELETE" });
       setProducts(products.filter((p) => p._id !== id));
     } catch (error) {
       console.error("Delete product error:", error);
@@ -45,10 +58,29 @@ const AdminProducts = () => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setSelectedFiles(files);
-
-    // Tạo preview URLs
     const urls = files.map((file) => URL.createObjectURL(file));
     setPreviewUrls(urls);
+  };
+
+  const addBundleItem = () => {
+    setBundleItems([...bundleItems, { product: "", quantity: 1 }]);
+  };
+
+  const removeBundleItem = (index) => {
+    setBundleItems(bundleItems.filter((_, i) => i !== index));
+  };
+
+  const updateBundleItem = (index, field, value) => {
+    const updated = [...bundleItems];
+    updated[index][field] = field === "quantity" ? Number(value) : value;
+    setBundleItems(updated);
+  };
+
+  const calculateOriginalPrice = () => {
+    return bundleItems.reduce((sum, item) => {
+      const product = singleProducts.find((p) => p._id === item.product);
+      return sum + (product?.price || 0) * item.quantity;
+    }, 0);
   };
 
   const handleSave = async (e) => {
@@ -61,30 +93,24 @@ const AdminProducts = () => {
     formData.append("description", form.description.value);
     formData.append("category", form.category.value);
     formData.append("stock", form.stock?.value || 0);
+    formData.append("isBundle", isBundle);
 
-    // Thêm các file ảnh
-    selectedFiles.forEach((file) => {
-      formData.append("images", file);
-    });
+    if (isBundle && bundleItems.length > 0) {
+      formData.append("bundleItems", JSON.stringify(bundleItems.filter((item) => item.product)));
+    }
+
+    selectedFiles.forEach((file) => formData.append("images", file));
 
     try {
-      const url = editingProduct
-        ? `${API_URL}/api/products/${editingProduct._id}`
-        : `${API_URL}/api/products`;
+      const url = editingProduct ? `${API_URL}/api/products/${editingProduct._id}` : `${API_URL}/api/products`;
       const method = editingProduct ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        body: formData,
-      });
-
+      const res = await fetch(url, { method, body: formData });
       const data = await res.json();
+
       if (data.success) {
-        if (editingProduct) {
-          setProducts(products.map((p) => (p._id === editingProduct._id ? data.data : p)));
-        } else {
-          setProducts([data.data, ...products]);
-        }
+        fetchProducts();
+        fetchSingleProducts();
         handleCloseModal();
       }
     } catch (error) {
@@ -97,28 +123,32 @@ const AdminProducts = () => {
     setIsCreating(false);
     setSelectedFiles([]);
     setPreviewUrls([]);
+    setIsBundle(false);
+    setBundleItems([]);
   };
 
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
+    setIsBundle(product.isBundle || false);
+    setBundleItems(product.bundleItems?.map((item) => ({ product: item.product?._id || item.product, quantity: item.quantity })) || []);
     setPreviewUrls(product.images?.map((img) => `${API_URL}${img}`) || []);
+  };
+
+  const handleOpenCreate = () => {
+    setIsCreating(true);
+    setIsBundle(false);
+    setBundleItems([]);
   };
 
   const formatPrice = (price) => new Intl.NumberFormat("vi-VN").format(price) + "đ";
 
   const getImageUrl = (product) => {
-    if (product.images?.length > 0) {
-      return `${API_URL}${product.images[0]}`;
-    }
-    if (product.image) {
-      return product.image.startsWith("http") ? product.image : `${API_URL}${product.image}`;
-    }
+    if (product.images?.length > 0) return `${API_URL}${product.images[0]}`;
+    if (product.image) return product.image.startsWith("http") ? product.image : `${API_URL}${product.image}`;
     return "/placeholder.png";
   };
 
-  const filteredProducts = products.filter((p) =>
-    p.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredProducts = products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()));
 
   if (loading) return <div className="admin-loading">Đang tải...</div>;
 
@@ -129,37 +159,30 @@ const AdminProducts = () => {
       <div className="toolbar">
         <div className="search-box">
           <FaSearch />
-          <input
-            type="text"
-            placeholder="Tìm kiếm sản phẩm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <input type="text" placeholder="Tìm kiếm sản phẩm..." value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
-        <button className="add-btn" onClick={() => setIsCreating(true)}>
+        <button className="add-btn" onClick={handleOpenCreate}>
           <FaPlus /> Thêm sản phẩm
         </button>
       </div>
 
       <div className="products-grid">
         {filteredProducts.map((product) => (
-          <div key={product._id} className="product-card">
+          <div key={product._id} className={`product-card ${product.isBundle ? "bundle" : ""}`}>
+            {product.isBundle && <span className="bundle-badge"><FaGift /> Hộp quà</span>}
             <img src={getImageUrl(product)} alt={product.name} />
-            {product.images?.length > 1 && (
-              <span className="image-count">+{product.images.length - 1}</span>
-            )}
+            {product.images?.length > 1 && <span className="image-count">+{product.images.length - 1}</span>}
             <div className="product-info">
               <h3>{product.name}</h3>
               <p className="price">{formatPrice(product.price)}</p>
+              {product.isBundle && product.savings > 0 && (
+                <p className="savings">Tiết kiệm {formatPrice(product.savings)}</p>
+              )}
               <p className="category">{product.category}</p>
             </div>
             <div className="product-actions">
-              <button onClick={() => handleOpenEdit(product)}>
-                <FaEdit />
-              </button>
-              <button onClick={() => handleDelete(product._id)}>
-                <FaTrash />
-              </button>
+              <button onClick={() => handleOpenEdit(product)}><FaEdit /></button>
+              <button onClick={() => handleDelete(product._id)}><FaTrash /></button>
             </div>
           </div>
         ))}
@@ -175,45 +198,86 @@ const AdminProducts = () => {
                 <label>Tên sản phẩm</label>
                 <input name="name" defaultValue={editingProduct?.name || ""} required />
               </div>
+
+              {/* Bundle Toggle */}
+              <div className="form-group bundle-toggle">
+                <label className="checkbox-label">
+                  <input type="checkbox" checked={isBundle} onChange={(e) => setIsBundle(e.target.checked)} />
+                  <FaGift /> Đây là hộp quà (Bundle)
+                </label>
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
-                  <label>Giá (VND)</label>
+                  <label>Giá bán (VND)</label>
                   <input name="price" type="number" defaultValue={editingProduct?.price || ""} required />
+                  {isBundle && bundleItems.length > 0 && (
+                    <small className="price-hint">
+                      Giá gốc: {formatPrice(calculateOriginalPrice())}
+                    </small>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Số lượng</label>
                   <input name="stock" type="number" defaultValue={editingProduct?.stock || 0} />
                 </div>
               </div>
+
               <div className="form-group">
                 <label>Mô tả</label>
                 <textarea name="description" defaultValue={editingProduct?.description || ""} />
               </div>
+
               <div className="form-group">
                 <label>Danh mục</label>
                 <input name="category" defaultValue={editingProduct?.category || ""} />
               </div>
 
+              {/* Bundle Items */}
+              {isBundle && (
+                <div className="bundle-section">
+                  <h3>🎁 Sản phẩm trong hộp</h3>
+                  {bundleItems.map((item, index) => (
+                    <div key={index} className="bundle-item">
+                      <select
+                        value={item.product}
+                        onChange={(e) => updateBundleItem(index, "product", e.target.value)}
+                      >
+                        <option value="">-- Chọn sản phẩm --</option>
+                        {singleProducts.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.name} - {formatPrice(p.price)}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateBundleItem(index, "quantity", e.target.value)}
+                        placeholder="SL"
+                      />
+                      <button type="button" className="remove-item" onClick={() => removeBundleItem(index)}>
+                        <FaTimes />
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" className="add-item-btn" onClick={addBundleItem}>
+                    + Thêm sản phẩm
+                  </button>
+                </div>
+              )}
+
               {/* Image Upload */}
               <div className="form-group">
                 <label>Hình ảnh (tối đa 5 ảnh)</label>
                 <div className="upload-area">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileChange}
-                    id="image-upload"
-                    className="file-input"
-                  />
+                  <input type="file" accept="image/*" multiple onChange={handleFileChange} id="image-upload" className="file-input" />
                   <label htmlFor="image-upload" className="upload-label">
                     <FaCloudUploadAlt />
                     <span>Chọn ảnh từ máy tính</span>
-                    <small>JPEG, PNG, GIF, WebP (max 5MB mỗi ảnh)</small>
                   </label>
                 </div>
-
-                {/* Preview */}
                 {previewUrls.length > 0 && (
                   <div className="image-previews">
                     {previewUrls.map((url, index) => (
