@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
  * Dùng cho register và update password
  */
 
-// Hàm hash password
+//1. Hàm hash password
 // Input: password gốc (VD: "123456")
 // Output: password đã hash (VD: "$2a$10$abc...")
   // Hash password với salt
@@ -26,7 +26,7 @@ export const hashPassword = async (password) => {
 
 };
 
-// Hàm so sánh password khi login
+//2. Hàm so sánh password khi login
 // Input:
 //   - plainPassword: password user nhập (VD: "123456")
 //   - hashedPassword: password đã hash trong DB (VD: "$2a$10$abc...")

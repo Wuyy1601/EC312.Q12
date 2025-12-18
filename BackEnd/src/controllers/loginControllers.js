@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { comparePassword } from "../middleware/passwordHash.js"; // Import hàm so sánh password
 import { generateToken } from "../utils/jwt.js"; // Import hàm tạo JWT token
 
@@ -20,7 +20,7 @@ export const loginUser = async (req, res) => {
     // Tìm user trong database theo email
     // .select("+password") vì schema có select: false
     // Phải gọi rõ ràng để lấy password (vì cần so sánh)
-    const user = await User.findOne({ email }).select("+password");
+    const user = await User.findOne({ email }).select("+password +role");
 
     // Nếu không tìm thấy user → email không tồn tại
     if (!user) {
@@ -50,6 +50,7 @@ export const loginUser = async (req, res) => {
       id: user._id, // ID của user trong database (ObjectId)
       email: user.email,
       username: user.username,
+      role: user.role,
     });
 
     res.status(200).json({

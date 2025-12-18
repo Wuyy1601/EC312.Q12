@@ -25,6 +25,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"], // Chỉ được phép là "user" hoặc "admin"
+      default: "user",        // Mặc định là "user"
+    },
   },
   {
     // Tự động thêm 2 field:
@@ -37,6 +42,7 @@ const userSchema = new mongoose.Schema(
 // Tạo Model từ schema
 // Dùng userConnection để lưu vào database "users"
 // (không dùng mongoose.model vì cần kết nối riêng cho nhiều DB)
-const User = userConnection.model("User", userSchema);
+
+const User = userConnection.models.User || userConnection.model("User", userSchema);
 
 export default User;
