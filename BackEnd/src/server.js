@@ -5,6 +5,7 @@ import loginRouters from "./routes/loginRouters.js";
 import registerRouters from "./routes/registerRouters.js";
 import userRouters from "./routes/userRouters.js";
 import orderRouters from "./routes/orderRouters.js";
+import passwordRouters from "./routes/passwordRouters.js";
 
 // Load biến môi trường
 dotenv.config();
@@ -29,6 +30,7 @@ app.use("/api/login", loginRouters);
 app.use("/api/register", registerRouters);
 app.use("/api/users", userRouters);
 app.use("/api/orders", orderRouters);
+app.use("/api/password", passwordRouters);
 
 // Route test
 app.get("/", (req, res) => {
