@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaChevronDown, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
 import "./Header.css";
 
@@ -96,19 +96,12 @@ const Header = () => {
           {/* User Area */}
           {isLoggedIn ? (
             <div className="user-menu">
-              <div className="user-avatar-wrapper">
-                <img 
-                  src={user?.avatar || getRandomAvatar(user?.id || user?.username)} 
-                  alt={user?.username || "User"} 
-                  className="avatar-img" 
-                />
-                <button 
-                  className="dropdown-toggle"
-                  onClick={() => setShowDropdown(!showDropdown)}
-                >
-                  <FaChevronDown className={`chevron-icon ${showDropdown ? 'open' : ''}`} />
-                </button>
-              </div>
+              <img 
+                src={user?.avatar || getRandomAvatar(user?.id || user?.username)} 
+                alt={user?.username || "User"} 
+                className="avatar-img clickable" 
+                onClick={() => setShowDropdown(!showDropdown)}
+              />
               {showDropdown && (
                 <>
                   <div className="dropdown-backdrop" onClick={() => setShowDropdown(false)}></div>
@@ -119,7 +112,7 @@ const Header = () => {
                     <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
                       <FaUser /> Tài khoản của tôi
                     </Link>
-                    <Link to="/orders" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                    <Link to="/profile/orders" className="dropdown-item" onClick={() => setShowDropdown(false)}>
                       <FaBox /> Đơn hàng
                     </Link>
                     <button className="dropdown-item logout-btn" onClick={handleLogout}>

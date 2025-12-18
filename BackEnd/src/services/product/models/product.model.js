@@ -6,7 +6,12 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String },
     price: { type: Number, required: true },
-    category: { type: String, default: "other" },
+    category: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Category",
+      default: null 
+    },
+    categoryName: { type: String, default: "" }, // Backup category name for display
     image: { type: String },
     images: [{ type: String }],
     stock: { type: Number, default: 0 },

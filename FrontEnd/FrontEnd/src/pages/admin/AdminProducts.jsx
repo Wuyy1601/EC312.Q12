@@ -7,6 +7,7 @@ const API_URL = "http://localhost:5001";
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [singleProducts, setSingleProducts] = useState([]); // Products for bundle selection
+  const [categories, setCategories] = useState([]); // Categories list
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
@@ -18,9 +19,15 @@ const AdminProducts = () => {
   const [isBundle, setIsBundle] = useState(false);
   const [bundleItems, setBundleItems] = useState([]);
 
+  // Category state
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
   useEffect(() => {
     fetchProducts();
     fetchSingleProducts();
+    fetchCategories();
   }, []);
 
   const fetchProducts = async () => {
@@ -42,6 +49,16 @@ const AdminProducts = () => {
       setSingleProducts(data.data || []);
     } catch (error) {
       console.error("Fetch single products error:", error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/categories`);
+      const data = await res.json();
+      setCategories(data.data || []);
+    } catch (error) {
+      console.error("Fetch categories error:", error);
     }
   };
 
@@ -83,6 +100,32 @@ const AdminProducts = () => {
     }, 0);
   };
 
+  // Create new category
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    try {
+      const res = await fetch(`${API_URL}/api/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCategoryName.trim() }),
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setCategories([...categories, data.data]);
+        setSelectedCategory(data.data._id);
+        setIsCreatingCategory(false);
+        setNewCategoryName("");
+      } else {
+        alert(data.message || "Không thể tạo danh mục");
+      }
+    } catch (error) {
+      console.error("Create category error:", error);
+      alert("Lỗi khi tạo danh mục");
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -91,9 +134,15 @@ const AdminProducts = () => {
     formData.append("name", form.name.value);
     formData.append("price", form.price.value);
     formData.append("description", form.description.value);
-    formData.append("category", form.category.value);
     formData.append("stock", form.stock?.value || 0);
     formData.append("isBundle", isBundle);
+    
+    // Category - send both ID and name
+    if (selectedCategory) {
+      formData.append("category", selectedCategory);
+      const cat = categories.find(c => c._id === selectedCategory);
+      formData.append("categoryName", cat?.name || "");
+    }
 
     if (isBundle && bundleItems.length > 0) {
       formData.append("bundleItems", JSON.stringify(bundleItems.filter((item) => item.product)));
@@ -125,6 +174,9 @@ const AdminProducts = () => {
     setPreviewUrls([]);
     setIsBundle(false);
     setBundleItems([]);
+    setSelectedCategory("");
+    setIsCreatingCategory(false);
+    setNewCategoryName("");
   };
 
   const handleOpenEdit = (product) => {
@@ -132,12 +184,15 @@ const AdminProducts = () => {
     setIsBundle(product.isBundle || false);
     setBundleItems(product.bundleItems?.map((item) => ({ product: item.product?._id || item.product, quantity: item.quantity })) || []);
     setPreviewUrls(product.images?.map((img) => `${API_URL}${img}`) || []);
+    // Set category - handle both ObjectId and string
+    setSelectedCategory(product.category?._id || product.category || "");
   };
 
   const handleOpenCreate = () => {
     setIsCreating(true);
     setIsBundle(false);
     setBundleItems([]);
+    setSelectedCategory("");
   };
 
   const formatPrice = (price) => new Intl.NumberFormat("vi-VN").format(price) + "đ";
@@ -146,6 +201,12 @@ const AdminProducts = () => {
     if (product.images?.length > 0) return `${API_URL}${product.images[0]}`;
     if (product.image) return product.image.startsWith("http") ? product.image : `${API_URL}${product.image}`;
     return "/placeholder.png";
+  };
+
+  const getCategoryName = (product) => {
+    if (product.category?.name) return product.category.name;
+    if (product.categoryName) return product.categoryName;
+    return "Chưa phân loại";
   };
 
   const filteredProducts = products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()));
@@ -178,7 +239,7 @@ const AdminProducts = () => {
               {product.isBundle && product.savings > 0 && (
                 <p className="savings">Tiết kiệm {formatPrice(product.savings)}</p>
               )}
-              <p className="category">{product.category}</p>
+              <p className="category">{getCategoryName(product)}</p>
             </div>
             <div className="product-actions">
               <button onClick={() => handleOpenEdit(product)}><FaEdit /></button>
@@ -228,9 +289,48 @@ const AdminProducts = () => {
                 <textarea name="description" defaultValue={editingProduct?.description || ""} />
               </div>
 
+              {/* Category Selection */}
               <div className="form-group">
                 <label>Danh mục</label>
-                <input name="category" defaultValue={editingProduct?.category || ""} />
+                {!isCreatingCategory ? (
+                  <div className="category-select-wrapper">
+                    <select 
+                      value={selectedCategory} 
+                      onChange={(e) => {
+                        if (e.target.value === "_create_new_") {
+                          setIsCreatingCategory(true);
+                        } else {
+                          setSelectedCategory(e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="">-- Chọn danh mục --</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                      <option value="_create_new_">➕ Tạo danh mục mới...</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="new-category-input">
+                    <input 
+                      type="text"
+                      placeholder="Nhập tên danh mục mới..."
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      autoFocus
+                    />
+                    <button type="button" className="create-cat-btn" onClick={handleCreateCategory}>
+                      Tạo
+                    </button>
+                    <button type="button" className="cancel-cat-btn" onClick={() => {
+                      setIsCreatingCategory(false);
+                      setNewCategoryName("");
+                    }}>
+                      Hủy
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Bundle Items */}

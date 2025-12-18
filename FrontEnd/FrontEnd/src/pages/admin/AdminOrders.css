@@ -161,3 +161,26 @@
   cursor: pointer;
   font-weight: 600;
 }
+
+/* User badges */
+.user-id {
+  font-size: 0.85rem;
+}
+
+.user-badge {
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.guest-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+

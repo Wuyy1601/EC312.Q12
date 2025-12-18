@@ -103,6 +103,7 @@ const AdminOrders = () => {
           <tr>
             <th>Mã đơn</th>
             <th>Khách hàng</th>
+            <th>User</th>
             <th>Tổng tiền</th>
             <th>Thanh toán</th>
             <th>Trạng thái</th>
@@ -115,6 +116,7 @@ const AdminOrders = () => {
             <tr key={order._id}>
               <td className="order-code">{order.orderCode}</td>
               <td>{order.customerInfo?.fullName || "N/A"}</td>
+              <td className="user-id">{order.userId ? <span className="user-badge">#{order.userId.slice(-6)}</span> : <span className="guest-badge">Khách</span>}</td>
               <td className="price">{formatPrice(order.totalAmount)}</td>
               <td>
                 <span className={`payment-badge ${order.paymentStatus}`}>

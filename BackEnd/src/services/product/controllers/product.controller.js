@@ -1,4 +1,5 @@
 import Product from "../models/product.model.js";
+import Category from "../../category/models/category.model.js"; // Import to register model for populate
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -21,9 +22,14 @@ export const getAllProducts = async (req, res) => {
 
     let products;
     if (search) {
-      products = await Product.find({ ...query, $text: { $search: search } }).populate("bundleItems.product", "name price image");
+      products = await Product.find({ ...query, $text: { $search: search } })
+        .populate("bundleItems.product", "name price image")
+        .populate("category", "name slug");
     } else {
-      products = await Product.find(query).populate("bundleItems.product", "name price image").sort({ createdAt: -1 });
+      products = await Product.find(query)
+        .populate("bundleItems.product", "name price image")
+        .populate("category", "name slug")
+        .sort({ createdAt: -1 });
     }
 
     res.json({ success: true, count: products.length, data: products });
@@ -35,7 +41,9 @@ export const getAllProducts = async (req, res) => {
 // Get product by ID
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("bundleItems.product", "name price image description");
+    const product = await Product.findById(req.params.id)
+      .populate("bundleItems.product", "name price image description")
+      .populate("category", "name slug");
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
     res.json({ success: true, data: product });
   } catch (error) {
@@ -50,7 +58,7 @@ export const createProduct = async (req, res) => {
     console.log("Body:", req.body);
     console.log("Files:", req.files?.length || 0);
 
-    const { name, price, description, category, stock, isBundle, bundleItems } = req.body;
+    const { name, price, description, category, categoryName, stock, isBundle, bundleItems } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({ success: false, message: "Tên và giá là bắt buộc" });
@@ -73,7 +81,8 @@ export const createProduct = async (req, res) => {
       name,
       price: Number(price),
       description: description || "",
-      category: category || "other",
+      category: category || null, // Now expects ObjectId or null
+      categoryName: categoryName || "", // Store category name for display
       stock: Number(stock) || 0,
       images,
       image: images[0] || "",
@@ -94,7 +103,7 @@ export const createProduct = async (req, res) => {
 // Update product (Admin) - with file upload and bundle support
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, stock, isBundle, bundleItems } = req.body;
+    const { name, price, description, category, categoryName, stock, isBundle, bundleItems } = req.body;
     
     // Parse bundleItems nếu là string
     let parsedBundleItems = undefined;
@@ -110,7 +119,8 @@ export const updateProduct = async (req, res) => {
       name,
       price: Number(price),
       description,
-      category,
+      category: category || null,
+      categoryName: categoryName || "",
       stock: Number(stock),
       isBundle: isBundle === "true" || isBundle === true,
     };

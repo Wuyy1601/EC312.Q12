@@ -79,15 +79,20 @@ const CheckoutPage = () => {
     setError("");
 
     try {
+      // Lấy user data nếu đã đăng nhập
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+      const user = userData ? JSON.parse(userData) : null;
+
       // Gọi API tạo đơn hàng
       const response = await fetch("http://localhost:5001/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Thêm token nếu đã đăng nhập
-          // "Authorization": `Bearer ${localStorage.getItem("token")}`
+          ...(token && { "Authorization": `Bearer ${token}` }),
         },
         body: JSON.stringify({
+          userId: user?.id || null, // Gửi userId nếu đã đăng nhập
           customerInfo,
           items: cartItems.map((item) => ({
             productId: item.id,

@@ -81,7 +81,14 @@ export const getOrder = async (req, res) => {
 
     let paymentInfo = null;
     if (order.paymentStatus === "pending" && order.paymentMethod !== "cod") {
-      paymentInfo = { qrUrl: generateQRUrl(order), transferContent: order.getTransferContent() };
+      paymentInfo = {
+        bankName: process.env.BANK_NAME || "MB Bank",
+        accountNumber: process.env.BANK_ACCOUNT || "1234567890",
+        accountName: process.env.BANK_ACCOUNT_NAME || "NGUYEN VAN A",
+        amount: order.totalAmount,
+        transferContent: order.getTransferContent(),
+        qrUrl: generateQRUrl(order),
+      };
     }
 
     res.json({ success: true, order, paymentInfo });

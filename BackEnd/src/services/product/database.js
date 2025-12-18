@@ -16,4 +16,5 @@ connection.on("error", (err) => {
   console.error("❌ Product Service DB Error:", err.message);
 });
 
+// Export connection for both Product and Category to share
 export default connection;

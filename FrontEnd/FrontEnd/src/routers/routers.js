@@ -40,6 +40,38 @@ export const authRoutes = [
   },
 ];
 
+// Profile routes (with ProfileLayout sidebar)
+export const profileRoutes = {
+  layout: lazy(() => import("@pages/profile/ProfilePage")),
+  children: [
+    {
+      path: "",
+      index: true,
+      component: lazy(() => import("@pages/profile/ProfileInfo")),
+    },
+    {
+      path: "password",
+      component: lazy(() => import("@pages/profile/ProfilePassword")),
+    },
+    {
+      path: "orders",
+      component: lazy(() => import("@pages/profile/MyOrders")),
+    },
+    {
+      path: "address",
+      component: lazy(() => import("@pages/profile/ProfileAddress")),
+    },
+    {
+      path: "delete",
+      component: lazy(() => import("@pages/profile/ProfileDelete")),
+    },
+    {
+      path: "notifications",
+      component: lazy(() => import("@pages/profile/ProfileNotifications")),
+    },
+  ],
+};
+
 // Admin dashboard routes (with AdminLayout)
 export const adminDashboardRoutes = [
   {
@@ -61,3 +93,4 @@ export const adminDashboardRoutes = [
 ];
 
 export default routers;
+

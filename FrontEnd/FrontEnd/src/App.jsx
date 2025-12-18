@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "@components/Layout";
-import routers, { adminRoutes, adminDashboardRoutes, authRoutes } from "@/routers/routers";
+import routers, { adminRoutes, adminDashboardRoutes, authRoutes, profileRoutes } from "@/routers/routers";
 import "./App.css";
 
 // Lazy load AdminLayout
@@ -24,6 +24,31 @@ function App() {
               }
             />
           ))}
+        </Route>
+
+        {/* Profile routes with ProfilePage sidebar layout */}
+        <Route element={<Layout />}>
+          <Route
+            path="/profile"
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <profileRoutes.layout />
+              </Suspense>
+            }
+          >
+            {profileRoutes.children.map((route, index) => (
+              <Route
+                key={`profile-${index}`}
+                index={route.index}
+                path={route.path}
+                element={
+                  <Suspense fallback={<div>Loading...</div>}>
+                    <route.component />
+                  </Suspense>
+                }
+              />
+            ))}
+          </Route>
         </Route>
 
         {/* Admin login - no layout */}
@@ -79,3 +104,4 @@ function App() {
 }
 
 export default App;
+

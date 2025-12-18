@@ -204,34 +204,16 @@
   object-fit: cover;
   border: 2px solid #fff;
   box-shadow: 0 2px 8px rgba(255, 182, 193, 0.5);
-}
-
-.dropdown-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 50%;
-  cursor: pointer;
   transition: all 0.3s ease;
-  color: #666;
 }
 
-.dropdown-toggle:hover {
-  background: #fff;
-  color: #e94560;
+.avatar-img.clickable {
+  cursor: pointer;
 }
 
-.chevron-icon {
-  font-size: 0.7rem;
-  transition: transform 0.3s ease;
-}
-
-.chevron-icon.open {
-  transform: rotate(180deg);
+.avatar-img.clickable:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 15px rgba(255, 182, 193, 0.7);
 }
 
 /* ========== DROPDOWN MENU ========== */
