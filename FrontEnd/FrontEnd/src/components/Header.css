@@ -8,9 +8,10 @@
     rgba(200, 230, 255, 0.8) 50%,
     rgba(255, 255, 255, 0.6) 100%
   );
-  height: 80px;
+  height: 70px;
   padding: 0 2rem;
   display: flex;
+  align-items: center;
   border-bottom: 2px solid rgba(255, 182, 193, 0.5);
   position: sticky;
   top: 0;
@@ -19,7 +20,8 @@
 }
 
 .header-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -33,6 +35,7 @@
   align-items: center;
   text-decoration: none;
   transition: transform 0.3s ease;
+  flex-shrink: 0;
 }
 
 .logo:hover {
@@ -46,21 +49,63 @@
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
 }
 
+/* ========== NAVIGATION MENU ========== */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-link {
+  color: #555;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #ffb6c1, #ff8fab);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #e94560;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* ========== RIGHT SIDE ========== */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* ========== SEARCH BAR ========== */
 .search-form {
-  flex: 1;
-  max-width: 400px;
   display: flex;
   position: relative;
+  width: 200px;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.7rem 1.2rem;
-  padding-right: 45px;
+  padding: 0.5rem 1rem;
+  padding-right: 35px;
   border: 2px solid rgba(255, 182, 193, 0.5);
-  border-radius: 25px;
-  font-size: 0.9rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.9);
   color: #333;
   transition: all 0.3s ease;
@@ -75,6 +120,7 @@
   outline: none;
   border-color: #ffb6c1;
   box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+  width: 250px;
 }
 
 .search-btn {
@@ -82,8 +128,8 @@
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: none;
   border-radius: 50%;
   background: transparent;
@@ -97,23 +143,16 @@
 
 .search-btn:hover {
   color: #e94560;
-  transform: translateY(-50%) scale(1.1);
 }
 
-/* ========== RIGHT SIDE ========== */
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
+/* ========== CART ========== */
 .cart-link {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.8);
   color: #666;
@@ -129,7 +168,7 @@
 }
 
 .cart-icon {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .cart-badge {
@@ -138,39 +177,139 @@
   right: -5px;
   background: linear-gradient(135deg, #ff6b9d, #e94560);
   color: white;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.35rem;
   border-radius: 20px;
-  min-width: 16px;
+  min-width: 14px;
   text-align: center;
   box-shadow: 0 2px 6px rgba(233, 69, 96, 0.4);
 }
 
-/* ========== USER AVATAR ========== */
-.user-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.3s ease;
+/* ========== USER AREA ========== */
+.user-menu {
+  position: relative;
 }
 
-.user-avatar:hover {
-  transform: scale(1.1);
+.user-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .avatar-img {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #fff;
-  box-shadow: 0 3px 10px rgba(255, 182, 193, 0.5);
+  border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(255, 182, 193, 0.5);
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #666;
+}
+
+.dropdown-toggle:hover {
+  background: #fff;
+  color: #e94560;
+}
+
+.chevron-icon {
+  font-size: 0.7rem;
+  transition: transform 0.3s ease;
+}
+
+.chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+/* ========== DROPDOWN MENU ========== */
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 1001;
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  padding: 1rem;
+  background: linear-gradient(135deg, #fce4ec, #fff);
+  border-bottom: 1px solid #f8bbd0;
+  font-size: 0.9rem;
+  color: #880e4f;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.8rem 1rem;
+  color: #555;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: #fce4ec;
+  color: #880e4f;
+}
+
+.logout-btn {
+  color: #e94560;
+  border-top: 1px solid #eee;
+}
+
+.logout-btn:hover {
+  background: #ffebee;
+  color: #c62828;
 }
 
 /* ========== LOGIN BUTTON ========== */
 .login-btn {
-  padding: 0.6rem 1.2rem;
+  padding: 0.5rem 1rem;
   background: linear-gradient(135deg, #ffb6c1, #ff8fab);
   color: white;
   text-decoration: none;
@@ -179,6 +318,7 @@
   font-weight: 600;
   transition: all 0.3s ease;
   box-shadow: 0 3px 10px rgba(255, 182, 193, 0.4);
+  white-space: nowrap;
 }
 
 .login-btn:hover {
@@ -187,9 +327,15 @@
 }
 
 /* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+  .nav-menu {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .header {
-    padding: 0.6rem 1rem;
+    padding: 0 1rem;
   }
 
   .header-container {
@@ -197,16 +343,15 @@
   }
 
   .search-form {
-    max-width: 200px;
+    width: 150px;
+  }
+
+  .search-input:focus {
+    width: 150px;
   }
 
   .logo-img {
     height: 40px;
-  }
-
-  .login-btn {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.75rem;
   }
 }
 

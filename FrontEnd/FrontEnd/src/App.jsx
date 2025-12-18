@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Layout from "@components/Layout";
-import routers, { adminRoutes, adminDashboardRoutes } from "@/routers/routers";
+import routers, { adminRoutes, adminDashboardRoutes, authRoutes } from "@/routers/routers";
 import "./App.css";
 
 // Lazy load AdminLayout
@@ -30,6 +30,19 @@ function App() {
         {adminRoutes.map((route, index) => (
           <Route
             key={`admin-${index}`}
+            path={route.path}
+            element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <route.component />
+              </Suspense>
+            }
+          />
+        ))}
+
+        {/* Auth routes - no layout */}
+        {authRoutes.map((route, index) => (
+          <Route
+            key={`auth-${index}`}
             path={route.path}
             element={
               <Suspense fallback={<div>Loading...</div>}>

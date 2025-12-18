@@ -328,6 +328,45 @@ export const deleteOrder = async (req, res) => {
   }
 };
 
-export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook, getAllOrders, updateOrderStatus, deleteOrder };
+// Simulate Payment (DEV/TEST only)
+export const simulatePayment = async (req, res) => {
+  try {
+    const { orderCode } = req.params;
+    const order = await Order.findOne({ orderCode });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+
+    if (order.paymentStatus === "paid") {
+      return res.status(400).json({ success: false, message: "Đơn hàng đã được thanh toán trước đó" });
+    }
+
+    // Simulate successful payment
+    order.paymentStatus = "paid";
+    order.paidAt = new Date();
+    order.transactionId = "SIMULATE_" + Date.now();
+    order.orderStatus = "confirmed";
+    await order.save();
+
+    console.log(`✅ [SIMULATE] Đơn hàng ${orderCode} đã được thanh toán!`);
+    sendPaymentSuccess(order);
+
+    res.json({
+      success: true,
+      message: "Đã giả lập thanh toán thành công!",
+      order: {
+        orderCode: order.orderCode,
+        paymentStatus: order.paymentStatus,
+        paidAt: order.paidAt,
+      },
+    });
+  } catch (error) {
+    console.error("Simulate payment error:", error);
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook, getAllOrders, updateOrderStatus, deleteOrder, simulatePayment };
 
 

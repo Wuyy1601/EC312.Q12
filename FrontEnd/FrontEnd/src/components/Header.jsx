@@ -1,23 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaChevronDown, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
 import "./Header.css";
+
+// Random avatar nếu user không có
+const getRandomAvatar = (userId) => {
+  const avatarId = userId ? (userId.charCodeAt(0) % 70) + 1 : Math.floor(Math.random() * 70) + 1;
+  return `https://i.pravatar.cc/100?img=${avatarId}`;
+};
 
 const Header = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Check login status
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-    if (token && userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    }
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+      if (token && userData) {
+        setIsLoggedIn(true);
+        setUser(JSON.parse(userData));
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    };
+    
+    checkAuth();
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   const handleSearch = (e) => {
@@ -25,6 +41,15 @@ const Header = () => {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    setUser(null);
+    setShowDropdown(false);
+    navigate("/");
   };
 
   // Cart count
@@ -39,35 +64,71 @@ const Header = () => {
           <img src={logo} alt="Giftnity" className="logo-img" />
         </Link>
 
-        {/* Search Bar */}
-        <form className="search-form" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Tìm kiếm..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <button type="submit" className="search-btn">
-            <FaSearch />
-          </button>
-        </form>
+        {/* Navigation Menu */}
+        <nav className="nav-menu">
+          <Link to="/" className="nav-link">Trang chủ</Link>
+          <Link to="/products" className="nav-link">Sản phẩm</Link>
+          <Link to="/contact" className="nav-link">Liên hệ</Link>
+        </nav>
 
-        {/* Right Side - Cart & User */}
+        {/* Right Side */}
         <div className="header-right">
+          {/* Search Bar */}
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Tìm kiếm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            <button type="submit" className="search-btn">
+              <FaSearch />
+            </button>
+          </form>
+
+          {/* Cart */}
           <Link to="/cart" className="cart-link">
             <FaShoppingCart className="cart-icon" />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
 
+          {/* User Area */}
           {isLoggedIn ? (
-            <Link to="/profile" className="user-avatar">
-              <img 
-                src={user?.avatar || "https://i.pravatar.cc/100?img=5"} 
-                alt="User" 
-                className="avatar-img" 
-              />
-            </Link>
+            <div className="user-menu">
+              <div className="user-avatar-wrapper">
+                <img 
+                  src={user?.avatar || getRandomAvatar(user?.id || user?.username)} 
+                  alt={user?.username || "User"} 
+                  className="avatar-img" 
+                />
+                <button 
+                  className="dropdown-toggle"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <FaChevronDown className={`chevron-icon ${showDropdown ? 'open' : ''}`} />
+                </button>
+              </div>
+              {showDropdown && (
+                <>
+                  <div className="dropdown-backdrop" onClick={() => setShowDropdown(false)}></div>
+                  <div className="user-dropdown">
+                    <div className="dropdown-header">
+                      Xin chào, <strong>{user?.username || 'User'}</strong>
+                    </div>
+                    <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                      <FaUser /> Tài khoản của tôi
+                    </Link>
+                    <Link to="/orders" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                      <FaBox /> Đơn hàng
+                    </Link>
+                    <button className="dropdown-item logout-btn" onClick={handleLogout}>
+                      <FaSignOutAlt /> Đăng xuất
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           ) : (
             <Link to="/login" className="login-btn">
               Đăng nhập

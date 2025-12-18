@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import userApp from "./services/user/index.js";
 import orderApp from "./services/order/index.js";
 import productApp from "./services/product/index.js";
+import categoryApp from "./services/category/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,9 @@ app.use(orderApp);
 
 // Mount Product Service
 app.use(productApp);
+
+// Mount Category Service
+app.use(categoryApp);
 
 // =============================================
 // Health Check & Info

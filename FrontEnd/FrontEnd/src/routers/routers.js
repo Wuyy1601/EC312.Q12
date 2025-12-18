@@ -28,6 +28,18 @@ export const adminRoutes = [
   },
 ];
 
+// Auth routes (separate routes, no Layout)
+export const authRoutes = [
+  {
+    path: "/login",
+    component: lazy(() => import("@pages/auth/LoginPage")),
+  },
+  {
+    path: "/register",
+    component: lazy(() => import("@pages/auth/RegisterPage")),
+  },
+];
+
 // Admin dashboard routes (with AdminLayout)
 export const adminDashboardRoutes = [
   {
