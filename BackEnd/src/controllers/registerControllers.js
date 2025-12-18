@@ -1,4 +1,4 @@
-import User from "../models/User.js";
+import User from "../models/user.js";
 import { hashPassword } from "../middleware/passwordHash.js"; // Import hàm hash password
 import { generateToken } from "../utils/jwt.js"; // Import hàm tạo JWT token
 

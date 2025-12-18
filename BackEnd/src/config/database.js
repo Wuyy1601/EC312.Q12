@@ -25,6 +25,10 @@ Object.entries(dbConfigs).forEach(([name, uri]) => {
     console.log(` Kết nối ${name.toUpperCase()} DB thành công`);
   });
 
+  conn.on("error", (err) => {
+    console.error(` Lỗi kết nối ${name.toUpperCase()} DB:`, err.message);
+  });
+
   connections[name] = conn;
 });
 
