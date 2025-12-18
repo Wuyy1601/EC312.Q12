@@ -233,4 +233,36 @@ export const changePassword = async (req, res) => {
     });
   }
 };
-export default { getAllUsers, getUserById, updateUserProfile, changePassword };
+// 5. Lấy thông tin profile của chính mình
+export const getMyProfile = async (req, res) => {
+  try {
+    // Lấy ID từ token (đã được set bởi middleware authenticateToken)
+    const userId = req.user.id;
+
+    // Tìm user trong database, không trả về password
+    const user = await User.findById(userId).select("-password");
+
+    // Kiểm tra user có tồn tại không
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy thông tin user",
+      });
+    }
+
+    // Trả về thông tin user
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+
+  } catch (error) {
+    console.error("Lỗi lấy profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi lấy thông tin profile",
+      error: error.message,
+    });
+  }
+};
+export default { getAllUsers, getUserById, updateUserProfile, changePassword , getMyProfile};
