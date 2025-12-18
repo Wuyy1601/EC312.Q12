@@ -9,6 +9,7 @@ import userApp from "./services/user/index.js";
 import orderApp from "./services/order/index.js";
 import productApp from "./services/product/index.js";
 import categoryApp from "./services/category/index.js";
+import reviewRoutes from "./services/review/routes/review.routes.js";
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,9 @@ app.use(productApp);
 
 // Mount Category Service
 app.use(categoryApp);
+
+// Mount Review Service
+app.use("/api/reviews", reviewRoutes); // Mounted reviewRoutes
 
 // =============================================
 // Health Check & Info

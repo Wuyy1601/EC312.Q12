@@ -1,5 +1,6 @@
 import React from "react";
 import { FaShoppingCart } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import "./ProductCard.css";
 
 const ProductCard = ({
@@ -16,6 +17,7 @@ const ProductCard = ({
   };
 
   const isFlashSale = type === "flash-sale";
+  const productId = product._id || product.id;
 
   return (
     <div
@@ -23,6 +25,7 @@ const ProductCard = ({
         isFlashSale ? "flash-sale-card" : "featured-card"
       }`}
     >
+      <Link to={`/product/${productId}`} className="product-link-wrapper">
       {showDiscount && discountPercent > 0 && (
         <div className="discount-badge">{discountPercent}%</div>
       )}
@@ -45,6 +48,7 @@ const ProductCard = ({
           </div>
         )}
       </div>
+      </Link>
     </div>
   );
 };
