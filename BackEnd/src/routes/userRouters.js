@@ -1,5 +1,13 @@
 import express from "express";
-import { getAllUsers, getUserById , updateUserProfile , changePassword, getMyProfile} from "../controllers/userController.js";
+import { 
+    getAllUsers, 
+    getUserById , 
+    updateUserProfile , 
+    changePassword, 
+    getMyProfile,
+    deleteMyAccount,
+    deleteUserById,
+} from "../controllers/userController.js";
 import { authenticateToken , isAdmin} from "../middleware/auth.js";
 
 const router = express.Router();
@@ -19,7 +27,13 @@ router.put("/profile", authenticateToken, updateUserProfile);
 // PUT /api/users/change-password - Đổi mật khẩu (yêu cầu authentication)
 router.put("/change-password", authenticateToken, changePassword);
 
+// DELETE /api/users/me - User tự xóa tài khoản mình
+router.delete("/me", authenticateToken, deleteMyAccount);
+
+// DELETE /api/users/:id - Admin xóa user theo ID
+router.delete("/:id", authenticateToken, isAdmin, deleteUserById);
+
 export default router;
 
 
-// DELETE /api/users/:id - Xóa user theo ID
+
