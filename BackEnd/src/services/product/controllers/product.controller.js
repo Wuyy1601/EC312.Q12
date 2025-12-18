@@ -1,4 +1,9 @@
 import Product from "../models/product.model.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Get all products
 export const getAllProducts = async (req, res) => {
@@ -37,20 +42,54 @@ export const getProductById = async (req, res) => {
   }
 };
 
-// Create product (Admin)
+// Create product (Admin) - with file upload
 export const createProduct = async (req, res) => {
   try {
-    const product = await Product.create(req.body);
+    console.log("📦 Creating product...");
+    console.log("Body:", req.body);
+    console.log("Files:", req.files?.length || 0);
+
+    const { name, price, description, category, stock } = req.body;
+
+    if (!name || !price) {
+      return res.status(400).json({ success: false, message: "Tên và giá là bắt buộc" });
+    }
+
+    // Lấy URLs của các ảnh đã upload
+    const images = req.files?.map((file) => `/uploads/${file.filename}`) || [];
+
+    const product = await Product.create({
+      name,
+      price: Number(price),
+      description: description || "",
+      category: category || "other",
+      stock: Number(stock) || 0,
+      images,
+      image: images[0] || "",
+    });
+
+    console.log("✅ Product created:", product._id);
     res.status(201).json({ success: true, message: "Tạo sản phẩm thành công", data: product });
   } catch (error) {
+    console.error("❌ Create product error:", error);
     res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
   }
 };
 
-// Update product (Admin)
+// Update product (Admin) - with file upload
 export const updateProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const { name, price, description, category, stock } = req.body;
+    const updates = { name, price: Number(price), description, category, stock: Number(stock) };
+
+    // Nếu có upload ảnh mới
+    if (req.files?.length > 0) {
+      const images = req.files.map((file) => `/uploads/${file.filename}`);
+      updates.images = images;
+      updates.image = images[0];
+    }
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
     res.json({ success: true, message: "Cập nhật thành công", data: product });
   } catch (error) {

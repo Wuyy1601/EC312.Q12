@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Import service apps
 import authApp from "./services/auth/index.js";
@@ -9,6 +11,9 @@ import productApp from "./services/product/index.js";
 
 // Load environment variables
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -23,6 +28,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // =============================================
 // API GATEWAY - Route to services

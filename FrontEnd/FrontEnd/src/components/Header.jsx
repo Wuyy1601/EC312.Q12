@@ -1,36 +1,78 @@
-import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import { FaShoppingCart, FaUser } from "react-icons/fa";
-import SearchBar from "./SearchBar";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FaSearch, FaShoppingCart } from "react-icons/fa";
+import logo from "../assets/logo/logo.png";
 import "./Header.css";
 
 const Header = () => {
-  const location = useLocation();
-  const isCartPage = location.pathname === "/cart";
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
 
-  const handleSearch = (query) => {
-    console.log("Search:", query);
-    // Handle search functionality
+  // Check login status
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    if (token && userData) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
+
+  // Cart count
+  const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
+  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
     <header className="header">
       <div className="header-container">
+        {/* Logo */}
         <Link to="/" className="logo">
-          <img src="/logo.png" alt="Giftnity Logo" className="logo-img" />
-          <span className="logo-text">Giftnity</span>
-          {isCartPage && <span className="page-title">| Giỏ hàng</span>}
+          <img src={logo} alt="Giftnity" className="logo-img" />
         </Link>
 
-        <SearchBar onSearch={handleSearch} />
+        {/* Search Bar */}
+        <form className="search-form" onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Tìm kiếm..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
+          <button type="submit" className="search-btn">
+            <FaSearch />
+          </button>
+        </form>
 
-        <div className="header-icons">
-          <Link to="/cart" className="icon-link">
-            <FaShoppingCart className="icon" />
+        {/* Right Side - Cart & User */}
+        <div className="header-right">
+          <Link to="/cart" className="cart-link">
+            <FaShoppingCart className="cart-icon" />
+            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
-          <Link to="/profile" className="icon-link">
-            <FaUser className="icon" />
-          </Link>
+
+          {isLoggedIn ? (
+            <Link to="/profile" className="user-avatar">
+              <img 
+                src={user?.avatar || "https://i.pravatar.cc/100?img=5"} 
+                alt="User" 
+                className="avatar-img" 
+              />
+            </Link>
+          ) : (
+            <Link to="/login" className="login-btn">
+              Đăng nhập
+            </Link>
+          )}
         </div>
       </div>
     </header>

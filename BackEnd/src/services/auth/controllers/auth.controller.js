@@ -126,4 +126,60 @@ export const adminMiddleware = (req, res, next) => {
   next();
 };
 
-export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware };
+// Admin Login (hardcoded credentials)
+export const adminLogin = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Hardcoded admin credentials
+    if (username === "admin" && password === "admin") {
+      const token = generateToken({ id: "admin", username: "admin", role: "admin" });
+      return res.json({
+        success: true,
+        message: "Đăng nhập admin thành công",
+        token,
+        data: { id: "admin", username: "admin", role: "admin" },
+      });
+    }
+
+    res.status(401).json({ success: false, message: "Sai tài khoản hoặc mật khẩu admin" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+// Update User (Admin)
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    // Don't allow updating password directly here
+    delete updates.password;
+
+    const user = await User.findByIdAndUpdate(id, updates, { new: true });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User không tồn tại" });
+    }
+
+    res.json({ success: true, message: "Cập nhật thành công", data: user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+// Delete User (Admin)
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User không tồn tại" });
+    }
+    res.json({ success: true, message: "Xóa user thành công" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser };

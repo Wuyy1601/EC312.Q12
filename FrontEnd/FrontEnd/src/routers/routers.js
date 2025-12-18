@@ -1,4 +1,6 @@
 import { lazy } from "react";
+
+// Main pages
 const routers = [
   {
     path: "/",
@@ -18,5 +20,32 @@ const routers = [
   },
 ];
 
-export default routers;
+// Admin pages (separate routes, no Layout)
+export const adminRoutes = [
+  {
+    path: "/admin/login",
+    component: lazy(() => import("@pages/admin/AdminLogin")),
+  },
+];
 
+// Admin dashboard routes (with AdminLayout)
+export const adminDashboardRoutes = [
+  {
+    path: "dashboard",
+    component: lazy(() => import("@pages/admin/AdminDashboard")),
+  },
+  {
+    path: "users",
+    component: lazy(() => import("@pages/admin/AdminUsers")),
+  },
+  {
+    path: "products",
+    component: lazy(() => import("@pages/admin/AdminProducts")),
+  },
+  {
+    path: "orders",
+    component: lazy(() => import("@pages/admin/AdminOrders")),
+  },
+];
+
+export default routers;

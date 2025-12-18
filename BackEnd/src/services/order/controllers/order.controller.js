@@ -283,5 +283,58 @@ export const sepayWebhook = async (req, res) => {
   }
 };
 
-export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook };
+// Get All Orders (Admin)
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    res.json({ success: true, count: orders.length, data: orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+// Update Order Status (Admin)
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderCode } = req.params;
+    const { orderStatus, paymentStatus } = req.body;
+
+    const order = await Order.findOne({ orderCode });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+
+    if (orderStatus) {
+      order.orderStatus = orderStatus;
+    }
+    if (paymentStatus) {
+      order.paymentStatus = paymentStatus;
+      if (paymentStatus === "paid" && !order.paidAt) {
+        order.paidAt = new Date();
+      }
+    }
+
+    await order.save();
+    res.json({ success: true, message: "Cập nhật thành công", data: order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+// Delete Order (Admin)
+export const deleteOrder = async (req, res) => {
+  try {
+    const { orderCode } = req.params;
+    const order = await Order.findOneAndDelete({ orderCode });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+    res.json({ success: true, message: "Xóa đơn hàng thành công" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook, getAllOrders, updateOrderStatus, deleteOrder };
+
 
