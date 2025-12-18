@@ -233,4 +233,145 @@ export const changePassword = async (req, res) => {
     });
   }
 };
-export default { getAllUsers, getUserById, updateUserProfile, changePassword };
+// 5. Lấy thông tin profile của chính mình
+export const getMyProfile = async (req, res) => {
+  try {
+    // Lấy ID từ token (đã được set bởi middleware authenticateToken)
+    const userId = req.user.id;
+
+    // Tìm user trong database, không trả về password
+    const user = await User.findById(userId).select("-password");
+
+    // Kiểm tra user có tồn tại không
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy thông tin user",
+      });
+    }
+
+    // Trả về thông tin user
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+
+  } catch (error) {
+    console.error("Lỗi lấy profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi lấy thông tin profile",
+      error: error.message,
+    });
+  }
+};
+
+// 6. User tự xóa tài khoản của mình
+export const deleteMyAccount = async (req, res) => {
+  try {
+    // Lấy ID từ token
+    const userId = req.user.id;
+
+    // Tìm và xóa user
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    // Kiểm tra user có tồn tại không
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy user",
+      });
+    }
+
+    // Trả về kết quả thành công
+    res.status(200).json({
+      success: true,
+      message: "Xóa tài khoản thành công",
+      data: {
+        deletedUser: {
+          id: deletedUser._id,
+          username: deletedUser.username,
+          email: deletedUser.email,
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Lỗi xóa tài khoản:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi xóa tài khoản",
+      error: error.message,
+    });
+  }
+};
+
+// 7. Admin xóa user theo ID
+export const deleteUserById = async (req, res) => {
+  try {
+    // Lấy ID từ URL params
+    const { id } = req.params;
+    
+    // Lấy ID của admin đang thực hiện
+    const adminId = req.user.id;
+
+    // Không cho phép admin tự xóa chính mình qua route này
+    if (id === adminId) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể xóa chính mình. Vui lòng sử dụng DELETE /api/users/me",
+      });
+    }
+
+    // Tìm và xóa user
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    // Kiểm tra user có tồn tại không
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy user với ID đã cho",
+      });
+    }
+
+    // Trả về kết quả thành công
+    res.status(200).json({
+      success: true,
+      message: "Xóa user thành công",
+      data: {
+        deletedUser: {
+          id: deletedUser._id,
+          username: deletedUser.username,
+          email: deletedUser.email,
+          role: deletedUser.role,
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Lỗi xóa user:", error);
+    
+    // Xử lý lỗi ID không hợp lệ
+    if (error.kind === "ObjectId") {
+      return res.status(400).json({
+        success: false,
+        message: "ID không hợp lệ",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi xóa user",
+      error: error.message,
+    });
+  }
+};
+export default { 
+  getAllUsers, 
+  getUserById, 
+  updateUserProfile, 
+  changePassword , 
+  getMyProfile,
+  deleteMyAccount,
+  deleteUserById,
+};
