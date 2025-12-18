@@ -50,12 +50,39 @@ const CartPage = () => {
     },
   ]);
 
+  // State để track sản phẩm được chọn (mặc định chọn tất cả)
+  const [selectedItems, setSelectedItems] = useState(() => 
+    new Set([1, 2, 3, 4, 5])
+  );
+
   const [discountCode, setDiscountCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("momo");
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN").format(price);
+  };
+
+  // Toggle chọn/bỏ chọn sản phẩm
+  const toggleSelectItem = (id) => {
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  // Chọn/bỏ chọn tất cả
+  const toggleSelectAll = () => {
+    if (selectedItems.size === cartItems.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(cartItems.map((item) => item.id)));
+    }
   };
 
   const updateQuantity = (id, change) => {
@@ -70,6 +97,12 @@ const CartPage = () => {
 
   const removeItem = (id) => {
     setCartItems((items) => items.filter((item) => item.id !== id));
+    // Cũng xóa khỏi selectedItems
+    setSelectedItems((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
   };
 
   const applyDiscount = () => {
@@ -84,13 +117,15 @@ const CartPage = () => {
     }
   };
 
-  const subtotal = cartItems.reduce(
+  // Chỉ tính những sản phẩm được chọn
+  const selectedCartItems = cartItems.filter((item) => selectedItems.has(item.id));
+  const subtotal = selectedCartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
   const discountAmount = (subtotal * discount) / 100;
   const total = subtotal - discountAmount;
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalItems = selectedCartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className="cart-page">
@@ -99,7 +134,14 @@ const CartPage = () => {
           <table className="cart-table">
             <thead>
               <tr>
-                <th></th>
+                <th>
+                  <input
+                    type="checkbox"
+                    className="item-checkbox"
+                    checked={selectedItems.size === cartItems.length && cartItems.length > 0}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th>Sản phẩm</th>
                 <th>Đơn giá</th>
                 <th>Số lượng</th>
@@ -114,7 +156,8 @@ const CartPage = () => {
                     <input
                       type="checkbox"
                       className="item-checkbox"
-                      defaultChecked
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => toggleSelectItem(item.id)}
                     />
                   </td>
                   <td>
@@ -302,8 +345,11 @@ const CartPage = () => {
             <button
               className="checkout-btn"
               onClick={() => {
-                // Lưu cart data vào localStorage để CheckoutPage sử dụng
-                localStorage.setItem("cartItems", JSON.stringify(cartItems));
+                // Chỉ lưu những sản phẩm được chọn vào localStorage
+                const itemsToCheckout = cartItems.filter((item) => 
+                  selectedItems.has(item.id)
+                );
+                localStorage.setItem("cartItems", JSON.stringify(itemsToCheckout));
                 localStorage.setItem("paymentMethod", paymentMethod);
                 localStorage.setItem("discountCode", discountCode);
                 localStorage.setItem(
@@ -313,9 +359,9 @@ const CartPage = () => {
                 // Chuyển sang trang checkout
                 navigate("/checkout");
               }}
-              disabled={cartItems.length === 0}
+              disabled={selectedItems.size === 0}
             >
-              THANH TOÁN
+              THANH TOÁN ({selectedItems.size} sản phẩm)
             </button>
           </div>
         </div>

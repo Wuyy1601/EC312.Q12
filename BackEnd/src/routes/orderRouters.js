@@ -9,6 +9,7 @@ import {
   momoIPN,
   vnpayIPN,
   vnpayReturn,
+  generateGreetingsAPI,
 } from "../controllers/orderController.js";
 import { authMiddleware } from "../middleware/auth.middleware.js";
 
@@ -16,6 +17,9 @@ const router = express.Router();
 
 // Route tạo đơn hàng - cho phép cả guest và logged-in user
 router.post("/", createOrder);
+
+// Route tạo lời chúc AI
+router.post("/generate-greetings", generateGreetingsAPI);
 
 // Webhook routes (phải đặt TRƯỚC dynamic routes)
 router.post("/webhook", paymentWebhook); // SePay (Bank QR)

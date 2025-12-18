@@ -12,6 +12,7 @@ import {
   verifyVnpaySignature,
   getVnpayResponseMessage,
 } from "../services/vnpayService.js";
+import { generateGreetings } from "../services/greetingService.js";
 
 /**
  * Tạo đơn hàng mới
@@ -53,6 +54,7 @@ export const createOrder = async (req, res) => {
       discountAmount: discountAmount || 0,
       paymentMethod,
       note: note || "",
+      giftMessage: req.body.giftMessage || { enabled: false },
       paymentStatus: paymentMethod === "cod" ? "pending" : "pending",
       orderStatus: "pending",
     });
@@ -618,6 +620,43 @@ export const vnpayReturn = async (req, res) => {
   }
 };
 
+/**
+ * API tạo lời chúc bằng AI
+ * POST /api/orders/generate-greetings
+ */
+export const generateGreetingsAPI = async (req, res) => {
+  try {
+    const { recipientName, relationship, occasion } = req.body;
+
+    // Validate input
+    if (!recipientName || !relationship || !occasion) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng cung cấp đầy đủ: tên người nhận, mối quan hệ và dịp tặng quà",
+      });
+    }
+
+    console.log(`🎁 Tạo lời chúc cho: ${recipientName} - ${relationship} - ${occasion}`);
+
+    // Gọi service tạo lời chúc
+    const result = await generateGreetings(recipientName, relationship, occasion);
+
+    res.json({
+      success: true,
+      greetings: result.greetings,
+      source: result.source,
+      warning: result.warning || null,
+    });
+  } catch (error) {
+    console.error("❌ Generate greetings error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi tạo lời chúc",
+      error: error.message,
+    });
+  }
+};
+
 export default {
   createOrder,
   getOrder,
@@ -628,4 +667,5 @@ export default {
   momoIPN,
   vnpayIPN,
   vnpayReturn,
+  generateGreetingsAPI,
 };

@@ -114,6 +114,36 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // Thông tin thẻ lời chúc
+    giftMessage: {
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+      recipientName: {
+        type: String,
+        default: "",
+      },
+      relationship: {
+        type: String,
+        enum: ["friend", "lover", "family", "colleague", "other", ""],
+        default: "",
+      },
+      occasion: {
+        type: String,
+        enum: ["birthday", "anniversary", "christmas", "newyear", "graduation", "other", ""],
+        default: "",
+      },
+      message: {
+        type: String,
+        default: "",
+      },
+      cardDesign: {
+        type: String,
+        enum: ["classic", "modern", "romantic", "festive"],
+        default: "classic",
+      },
+    },
   },
   {
     timestamps: true,

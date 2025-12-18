@@ -7,6 +7,8 @@ import {
   FaSpinner,
   FaCheckCircle,
 } from "react-icons/fa";
+import GiftMessageForm from "../components/GiftMessageForm";
+import MessageCardPreview from "../components/MessageCardPreview";
 import "./CheckoutPage.css";
 
 const CheckoutPage = () => {
@@ -38,6 +40,16 @@ const CheckoutPage = () => {
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [copied, setCopied] = useState(null);
   const [checking, setChecking] = useState(false);
+
+  // State cho gift message (FR-M.01, FR-M.02, FR-M.03)
+  const [giftMessage, setGiftMessage] = useState({
+    enabled: false,
+    recipientName: "",
+    relationship: "",
+    occasion: "",
+    message: "",
+    cardDesign: "classic",
+  });
 
   // Tính tổng tiền
   const subtotal = cartItems.reduce(
@@ -88,6 +100,7 @@ const CheckoutPage = () => {
           discountCode: localStorage.getItem("discountCode") || null,
           discountAmount: discount,
           paymentMethod,
+          giftMessage: giftMessage.enabled ? giftMessage : { enabled: false },
         }),
       });
 
@@ -206,6 +219,12 @@ const CheckoutPage = () => {
             required
           />
         </div>
+
+        {/* Gift Message Form - FR-M.01, FR-M.02 */}
+        <GiftMessageForm
+          giftMessage={giftMessage}
+          setGiftMessage={setGiftMessage}
+        />
 
         {error && <div className="error-message">{error}</div>}
 
@@ -422,6 +441,14 @@ const CheckoutPage = () => {
                     : "Chuyển khoản ngân hàng"}
                 </span>
               </div>
+
+              {/* Message Card Preview - FR-M.03 */}
+              <MessageCardPreview
+                giftMessage={giftMessage}
+                onDesignChange={(design) =>
+                  setGiftMessage((prev) => ({ ...prev, cardDesign: design }))
+                }
+              />
             </div>
           )}
         </div>

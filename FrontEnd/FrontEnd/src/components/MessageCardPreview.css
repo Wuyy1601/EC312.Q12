@@ -1,0 +1,223 @@
+.message-card-preview-wrapper {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(17, 24, 39, 0.6);
+  border-radius: 16px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.message-card-preview-wrapper h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin: 0 0 1rem 0;
+}
+
+/* Design Selector */
+.design-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.design-selector span {
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+.design-options {
+  display: flex;
+  gap: 8px;
+}
+
+.design-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.design-btn:hover {
+  transform: scale(1.1);
+}
+
+.design-btn.active {
+  border-color: white;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+/* Card Preview */
+.card-preview {
+  width: 100%;
+  min-height: 280px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: cardFloat 4s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Pattern Overlays */
+.pattern-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pattern-overlay.hearts .floating-heart {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.15);
+  animation: floatHeart 6s ease-in-out infinite;
+}
+
+.floating-heart.h1 { top: 10%; left: 10%; font-size: 1.5rem; animation-delay: 0s; }
+.floating-heart.h2 { top: 60%; right: 15%; font-size: 1.2rem; animation-delay: 2s; }
+.floating-heart.h3 { bottom: 20%; left: 25%; font-size: 1rem; animation-delay: 4s; }
+
+@keyframes floatHeart {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.15; }
+  50% { transform: translateY(-15px) rotate(15deg); opacity: 0.3; }
+}
+
+.pattern-overlay.confetti .confetti-piece {
+  position: absolute;
+  animation: confettiFall 5s ease-in-out infinite;
+}
+
+.confetti-piece.c1 { top: 5%; right: 10%; font-size: 1.2rem; animation-delay: 0s; }
+.confetti-piece.c2 { top: 30%; left: 8%; font-size: 1rem; animation-delay: 1.5s; }
+.confetti-piece.c3 { bottom: 25%; right: 20%; font-size: 0.9rem; animation-delay: 3s; }
+
+@keyframes confettiFall {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+  50% { transform: translateY(10px) rotate(180deg); opacity: 1; }
+}
+
+/* Card Content */
+.card-content {
+  position: relative;
+  z-index: 1;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-height: 280px;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.card-header .occasion-emoji {
+  font-size: 2rem;
+}
+
+.card-header .gift-icon {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Recipient Section */
+.recipient-section {
+  margin-bottom: 1.25rem;
+}
+
+.recipient-section .label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.recipient-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Message Section */
+.message-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.message-text {
+  font-size: 1.05rem;
+  color: white;
+  line-height: 1.7;
+  margin: 0;
+  font-style: italic;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.message-placeholder {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Card Footer */
+.card-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.card-footer span {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .card-preview {
+    min-height: 250px;
+  }
+  
+  .card-content {
+    padding: 1.5rem 1rem;
+    min-height: 250px;
+  }
+  
+  .recipient-name {
+    font-size: 1.5rem;
+  }
+  
+  .message-text {
+    font-size: 0.95rem;
+  }
+}
