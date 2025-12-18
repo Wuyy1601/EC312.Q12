@@ -4,13 +4,26 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Tạo transporter để gửi email
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER, // Email của bạn
-    pass: process.env.EMAIL_PASS, // App password (không phải mật khẩu thường)
-  },
-});
+const transporter = nodemailer.createTransport(
+  process.env.EMAIL_HOST
+    ? {
+        // Mailtrap or custom SMTP
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT || 2525,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      }
+    : {
+        // Gmail
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS,
+        },
+      }
+);
 
 /**
  * Gửi email xác nhận đơn hàng
@@ -30,7 +43,7 @@ export const sendOrderConfirmation = async (order) => {
   const mailOptions = {
     from: `"Giftnity Shop" <${process.env.EMAIL_USER}>`,
     to: order.customerInfo.email,
-    subject: `✨ Đơn hàng #${order.orderCode} đã được tạo - Giftnity`,
+    subject: `Đơn hàng #${order.orderCode} đã được tạo - Giftnity`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -56,7 +69,7 @@ export const sendOrderConfirmation = async (order) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎁 Giftnity</h1>
+            <h1>Giftnity</h1>
             <p style="color: white; margin: 10px 0 0;">Cảm ơn bạn đã đặt hàng!</p>
           </div>
           
@@ -68,7 +81,7 @@ export const sendOrderConfirmation = async (order) => {
               <p>Trạng thái: <span class="status payment-pending">Chờ thanh toán</span></p>
             </div>
             
-            <h3>📦 Chi tiết đơn hàng:</h3>
+            <h3>Chi tiết đơn hàng:</h3>
             <table>
               <thead>
                 <tr>
@@ -86,14 +99,14 @@ export const sendOrderConfirmation = async (order) => {
             <p class="total">Tổng cộng: ${order.totalAmount.toLocaleString("vi-VN")}đ</p>
             
             <div class="order-info">
-              <h3>📍 Địa chỉ giao hàng:</h3>
+              <h3>Địa chỉ giao hàng:</h3>
               <p><strong>${order.customerInfo.fullName}</strong></p>
               <p>${order.customerInfo.phone}</p>
               <p>${order.customerInfo.address}</p>
             </div>
             
             <div class="order-info" style="background: #fff3e0;">
-              <h3>💳 Thanh toán:</h3>
+              <h3>Thanh toán:</h3>
               <p><strong>Phương thức:</strong> ${getPaymentMethodName(order.paymentMethod)}</p>
               ${
                 order.paymentMethod !== "cod"
@@ -136,7 +149,7 @@ export const sendPaymentSuccess = async (order) => {
   const mailOptions = {
     from: `"Giftnity Shop" <${process.env.EMAIL_USER}>`,
     to: order.customerInfo.email,
-    subject: `✅ Thanh toán thành công - Đơn hàng #${order.orderCode} - Giftnity`,
+    subject: `Thanh toán thành công - Đơn hàng #${order.orderCode} - Giftnity`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -157,7 +170,7 @@ export const sendPaymentSuccess = async (order) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🎁 Giftnity</h1>
+            <h1> Giftnity</h1>
           </div>
           
           <div class="content">
@@ -174,13 +187,13 @@ export const sendPaymentSuccess = async (order) => {
             <p>Chúng tôi đã nhận được thanh toán của bạn. Đơn hàng đang được xử lý và sẽ sớm được giao đến bạn.</p>
             
             <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin: 20px 0;">
-              <p><strong>📦 Mã đơn hàng:</strong> ${order.orderCode}</p>
-              <p><strong>💰 Số tiền:</strong> ${order.totalAmount.toLocaleString("vi-VN")}đ</p>
-              <p><strong>⏰ Thời gian:</strong> ${new Date(order.paidAt).toLocaleString("vi-VN")}</p>
-              <p><strong>📍 Giao đến:</strong> ${order.customerInfo.address}</p>
+              <p><strong>Mã đơn hàng:</strong> ${order.orderCode}</p>
+              <p><strong>Số tiền:</strong> ${order.totalAmount.toLocaleString("vi-VN")}đ</p>
+              <p><strong>Thời gian:</strong> ${new Date(order.paidAt).toLocaleString("vi-VN")}</p>
+              <p><strong>Giao đến:</strong> ${order.customerInfo.address}</p>
             </div>
             
-            <p>Cảm ơn bạn đã mua sắm tại Giftnity! 💕</p>
+            <p>Cảm ơn bạn đã mua sắm tại Giftnity!</p>
           </div>
           
           <div class="footer">
@@ -195,10 +208,10 @@ export const sendPaymentSuccess = async (order) => {
 
   try {
     const result = await transporter.sendMail(mailOptions);
-    console.log("📧 Email thanh toán thành công đã gửi:", result.messageId);
+    console.log("Email thanh toán thành công đã gửi:", result.messageId);
     return { success: true, messageId: result.messageId };
   } catch (error) {
-    console.error("❌ Lỗi gửi email:", error);
+    console.error("Lỗi gửi email:", error);
     return { success: false, error: error.message };
   }
 };
@@ -215,9 +228,44 @@ function getPaymentMethodName(method) {
     cod: "Thanh toán khi nhận hàng (COD)",
   };
   return methods[method] || method;
-}
+};
+
+export const sendResetPasswordEmail = async (email, username, resetUrl) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Reset Password - EC312 Shop",
+    html: `
+      <h2>Xin chào ${username},</h2>
+      <p>Bạn đã yêu cầu reset password.</p>
+      <p>Click vào link bên dưới để đặt lại mật khẩu:</p>
+      <a href="${resetUrl}" style="
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+      ">Reset Password</a>
+      <p>Link này sẽ hết hạn sau 1 giờ.</p>
+      <p>Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
 
 export default {
   sendOrderConfirmation,
   sendPaymentSuccess,
+  sendResetPasswordEmail,
 };
+
