@@ -1,19 +1,19 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
-import loginRouters from "./routes/loginRouters.js";
-import registerRouters from "./routes/registerRouters.js";
-import userRouters from "./routes/userRouters.js";
-import orderRouters from "./routes/orderRouters.js";
-import passwordRouters from "./routes/passwordRouters.js";
+import dotenv from "dotenv";
 
-// Load biến môi trường
+// Import service apps
+import authApp from "./services/auth/index.js";
+import orderApp from "./services/order/index.js";
+import productApp from "./services/product/index.js";
+
+// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// CORS middleware
+// CORS Configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -21,31 +21,85 @@ app.use(
   })
 );
 
-// Middleware để parse JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use("/api/login", loginRouters);
-app.use("/api/register", registerRouters);
-app.use("/api/users", userRouters);
-app.use("/api/orders", orderRouters);
-app.use("/api/password", passwordRouters);
+// =============================================
+// API GATEWAY - Route to services
+// =============================================
 
-// Route test
+// Mount Auth Service
+app.use("/api/auth", authApp);
+app.use(authApp); // Also mount root for /api/auth/* paths
+
+// Mount Order Service
+app.use(orderApp);
+
+// Mount Product Service
+app.use(productApp);
+
+// =============================================
+// Health Check & Info
+// =============================================
+
 app.get("/", (req, res) => {
   res.json({
-    message: "Server đang chạy",
-    endpoints: {
-      register: "POST /api/register",
-      login: "POST /api/login",
-      users: "GET /api/users",
+    name: "Giftnity API Gateway",
+    version: "2.0.0",
+    architecture: "True Microservices",
+    services: {
+      auth: "/api/auth (users_db)",
+      orders: "/api/orders (orders_db)",
+      products: "/api/products (products_db)",
     },
+    status: "running",
   });
 });
 
+app.get("/health", (req, res) => {
+  res.json({
+    gateway: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// =============================================
+// Error handling
+// =============================================
+
+app.use((err, req, res, next) => {
+  console.error("Gateway Error:", err);
+  res.status(500).json({
+    success: false,
+    message: "Internal Server Error",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.path} not found`,
+  });
+});
+
+// =============================================
+// Start Server
+// =============================================
+
 app.listen(PORT, () => {
-  console.log(` Server đang chạy tại port ${PORT}`);
+  console.log("\n==============================================");
+  console.log("🚀 GIFTNITY API GATEWAY");
+  console.log("==============================================");
+  console.log(`📡 Gateway running on port ${PORT}`);
+  console.log(`🌐 URL: http://localhost:${PORT}`);
+  console.log("----------------------------------------------");
+  console.log("📦 Microservices Architecture:");
+  console.log("   ├── Auth Service    → /api/auth    (users_db)");
+  console.log("   ├── Order Service   → /api/orders  (orders_db)");
+  console.log("   └── Product Service → /api/products (products_db)");
+  console.log("==============================================\n");
 });
 
 export default app;
