@@ -224,4 +224,64 @@ export const generateGreetingsAPI = async (req, res) => {
   }
 };
 
-export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI };
+// SePay Webhook (Bank Transfer Payment)
+export const sepayWebhook = async (req, res) => {
+  try {
+    console.log("📥 SePay Webhook received:", JSON.stringify(req.body, null, 2));
+
+    const { transferAmount, content, transferType } = req.body;
+
+    // Chỉ xử lý giao dịch nhận tiền (in)
+    if (transferType !== "in") {
+      return res.json({ success: true, message: "Ignored outgoing transfer" });
+    }
+
+    // Tìm mã đơn hàng trong nội dung chuyển khoản
+    // Format: GIFTNITY TENKHACH MADONHANG
+    const orderCodeMatch = content?.match(/GN\d+/i);
+    
+    if (!orderCodeMatch) {
+      console.log("⚠️ Không tìm thấy mã đơn hàng trong nội dung:", content);
+      return res.json({ success: true, message: "No order code found" });
+    }
+
+    const orderCode = orderCodeMatch[0].toUpperCase();
+    console.log("🔍 Tìm đơn hàng:", orderCode);
+
+    const order = await Order.findOne({ orderCode });
+
+    if (!order) {
+      console.log("⚠️ Không tìm thấy đơn hàng:", orderCode);
+      return res.json({ success: true, message: "Order not found" });
+    }
+
+    // Kiểm tra số tiền (cho phép chênh lệch nhỏ do phí bank)
+    const amountDiff = Math.abs(order.totalAmount - transferAmount);
+    if (amountDiff > 1000) { // Cho phép chênh 1000đ
+      console.log(`⚠️ Số tiền không khớp: Expected ${order.totalAmount}, Got ${transferAmount}`);
+      return res.json({ success: true, message: "Amount mismatch" });
+    }
+
+    // Cập nhật trạng thái thanh toán
+    if (order.paymentStatus !== "paid") {
+      order.paymentStatus = "paid";
+      order.paidAt = new Date();
+      order.transactionId = req.body.id?.toString() || Date.now().toString();
+      order.orderStatus = "confirmed";
+      await order.save();
+
+      console.log("✅ Đã cập nhật thanh toán cho đơn hàng:", orderCode);
+      
+      // Gửi email xác nhận thanh toán
+      sendPaymentSuccess(order);
+    }
+
+    res.json({ success: true, message: "Payment confirmed" });
+  } catch (error) {
+    console.error("❌ SePay Webhook error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook };
+
