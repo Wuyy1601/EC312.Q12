@@ -34,3 +34,33 @@ export const authenticateToken = (req, res, next) => {
         });
     }
 };
+// Middleware kiểm tra quyền admin
+// Phải dùng SAU authenticateToken
+export const isAdmin = (req, res, next) => {
+  try {
+    // req.user đã được set bởi authenticateToken
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Vui lòng đăng nhập trước.",
+      });
+    }
+
+    // Kiểm tra role
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Chỉ admin mới có quyền truy cập.",
+      });
+    }
+
+    // Nếu là admin, cho phép tiếp tục
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi kiểm tra quyền.",
+      error: error.message,
+    });
+  }
+};

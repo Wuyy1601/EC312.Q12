@@ -1,4 +1,5 @@
-import User from "../models/User.js";
+import User from "../models/user.js";
+import { hashPassword, comparePassword } from "../middleware/passwordHash.js";
 
 // 1. Lấy tất cả users (cho admin)
 export const getAllUsers = async (req, res) => {
@@ -155,5 +156,81 @@ export const updateUserProfile = async (req, res) => {
       error: error.message,
     });
   }
-}
-export default { getAllUsers, getUserById, updateUserProfile };
+};
+//4. Đổi mật khẩu
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy từ JWT token
+    const { oldPassword, newPassword } = req.body;
+
+    // 1. VALIDATE INPUT
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng cung cấp mật khẩu cũ và mật khẩu mới",
+      });
+    }
+
+    // Kiểm tra độ dài password mới
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới phải có ít nhất 6 ký tự",
+      });
+    }
+
+    // 2. TÌM USER TRONG DATABASE (bao gồm cả password)
+    // Phải dùng .select("+password") vì trong model User, 
+    // field password có select: false
+    const user = await User.findById(userId).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy user",
+      });
+    }
+
+    // 3. XÁC THỰC PASSWORD CŨ
+    const isPasswordValid = await comparePassword(oldPassword, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Mật khẩu cũ không đúng",
+      });
+    }
+
+    // 4. KIỂM TRA PASSWORD MỚI KHÁC PASSWORD CŨ
+    const isSamePassword = await comparePassword(newPassword, user.password);
+    
+    if (isSamePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu mới phải khác mật khẩu cũ",
+      });
+    }
+
+    // 5. HASH PASSWORD MỚI
+    const hashedNewPassword = await hashPassword(newPassword);
+
+    // 6. CẬP NHẬT PASSWORD TRONG DATABASE
+    user.password = hashedNewPassword;
+    await user.save();
+
+    // 7. TRẢ VỀ KẾT QUẢ THÀNH CÔNG
+    res.status(200).json({
+      success: true,
+      message: "Đổi mật khẩu thành công",
+    });
+
+  } catch (error) {
+    console.error("Lỗi đổi mật khẩu:", error);
+    res.status(500).json({
+      success: false,
+      message: "Lỗi server khi đổi mật khẩu",
+      error: error.message,
+    });
+  }
+};
+export default { getAllUsers, getUserById, updateUserProfile, changePassword };

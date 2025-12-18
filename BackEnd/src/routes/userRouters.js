@@ -1,17 +1,20 @@
 import express from "express";
-import { getAllUsers, getUserById , updateUserProfile } from "../controllers/userController.js";
-import { authenticateToken } from "../middleware/auth.js";
+import { getAllUsers, getUserById , updateUserProfile , changePassword} from "../controllers/userController.js";
+import { authenticateToken , isAdmin} from "../middleware/auth.js";
 
 const router = express.Router();
 
 // GET /api/users - Lấy tất cả users
-router.get("/", getAllUsers);
+router.get("/", authenticateToken, isAdmin, getAllUsers);
 
 // GET /api/users/:id - Lấy thông tin user theo ID
-router.get("/:id", getUserById);
+router.get("/:id",authenticateToken, isAdmin, getUserById);
 
 // PUT /api/users/profile - Cập nhật profile (yêu cầu authentication)
 router.put("/profile", authenticateToken, updateUserProfile);
+
+// PUT /api/users/change-password - Đổi mật khẩu (yêu cầu authentication)
+router.put("/change-password", authenticateToken, changePassword);
 
 export default router;
 
