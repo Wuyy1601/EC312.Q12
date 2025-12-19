@@ -10,6 +10,8 @@ import orderApp from "./services/order/index.js";
 import productApp from "./services/product/index.js";
 import categoryApp from "./services/category/index.js";
 import reviewRoutes from "./services/review/routes/review.routes.js";
+import geminiApp from "./services/gemini/index.js";
+import templateApp from "./services/template/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -18,6 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.set("trust proxy", 1); // Trust first proxy (ngrok/vercel)
 const PORT = process.env.PORT || 5001;
 
 // CORS Configuration
@@ -28,8 +31,8 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 // Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -52,7 +55,13 @@ app.use(productApp);
 app.use(categoryApp);
 
 // Mount Review Service
-app.use("/api/reviews", reviewRoutes); // Mounted reviewRoutes
+app.use("/api/reviews", reviewRoutes);
+
+// Mount Gemini Service
+app.use(geminiApp);
+
+// Mount Template Service
+app.use(templateApp);
 
 // =============================================
 // Health Check & Info

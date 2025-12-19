@@ -120,7 +120,6 @@
   outline: none;
   border-color: #ffb6c1;
   box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
-  width: 250px;
 }
 
 .search-btn {
@@ -133,7 +132,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: #888;
+  color: #555;
   cursor: pointer;
   display: flex;
   align-items: center;

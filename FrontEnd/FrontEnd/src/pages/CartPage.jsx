@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaMinus,
@@ -10,54 +10,43 @@ import {
 } from "react-icons/fa";
 import "./CartPage.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-    {
-      id: 2,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/D4A5C7/FFFFFF?text=Gift",
-    },
-    {
-      id: 3,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-    {
-      id: 4,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/D4A5C7/FFFFFF?text=Gift",
-    },
-    {
-      id: 5,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
+
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://via.placeholder.com/500";
+    if (imagePath.startsWith("http")) return imagePath;
+    const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${API_URL}${path}`;
+  };
+
+  // Load cart from local storage
+  useEffect(() => {
+    const loadCart = () => {
+      const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      setCartItems(storedCart);
+      // Default select all
+      if (storedCart.length > 0) {
+        setSelectedItems(new Set(storedCart.map((item) => item.id)));
+      }
+    };
+
+    loadCart();
+
+    // Listen for storage changes
+    window.addEventListener("storage", loadCart);
+    return () => window.removeEventListener("storage", loadCart);
+  }, []);
 
   // State để track sản phẩm được chọn (mặc định chọn tất cả)
-  const [selectedItems, setSelectedItems] = useState(() => 
-    new Set([1, 2, 3, 4, 5])
-  );
+  const [selectedItems, setSelectedItems] = useState(new Set());
 
   const [discountCode, setDiscountCode] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("momo");
+
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN").format(price);
@@ -86,17 +75,25 @@ const CartPage = () => {
   };
 
   const updateQuantity = (id, change) => {
-    setCartItems((items) =>
-      items.map((item) =>
+    setCartItems((items) => {
+      const newItems = items.map((item) =>
         item.id === id
           ? { ...item, quantity: Math.max(1, item.quantity + change) }
           : item
-      )
-    );
+      );
+      localStorage.setItem("cart", JSON.stringify(newItems));
+      window.dispatchEvent(new Event("storage"));
+      return newItems;
+    });
   };
 
   const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+    setCartItems((items) => {
+      const newItems = items.filter((item) => item.id !== id);
+      localStorage.setItem("cart", JSON.stringify(newItems));
+      window.dispatchEvent(new Event("storage"));
+      return newItems;
+    });
     // Cũng xóa khỏi selectedItems
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
@@ -163,11 +160,16 @@ const CartPage = () => {
                   <td>
                     <div className="product-cell">
                       <img
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         className="product-thumb"
                       />
                       <span className="product-name">{item.name}</span>
+                      {item.isBundle && item.bundleDescription && (
+                        <div className="cart-bundle-desc">
+                          <small>Set gồm: {item.bundleDescription}</small>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="price-cell">{formatPrice(item.price)}</td>
@@ -177,14 +179,14 @@ const CartPage = () => {
                         className="qty-btn"
                         onClick={() => updateQuantity(item.id, -1)}
                       >
-                        <FaMinus />
+                        <i className="fa-solid fa-minus" style={{ fontSize: "10px" }}></i>
                       </button>
                       <span className="qty-value">{item.quantity}</span>
                       <button
                         className="qty-btn"
                         onClick={() => updateQuantity(item.id, 1)}
                       >
-                        <FaPlus />
+                        <i className="fa-solid fa-plus" style={{ fontSize: "10px" }}></i>
                       </button>
                     </div>
                   </td>
@@ -196,7 +198,7 @@ const CartPage = () => {
                       className="delete-btn"
                       onClick={() => removeItem(item.id)}
                     >
-                      <FaTrash />
+                      <i className="fa-solid fa-trash"></i>
                     </button>
                   </td>
                 </tr>
@@ -250,97 +252,7 @@ const CartPage = () => {
               <span className="total-value">{formatPrice(total)} VNĐ</span>
             </div>
 
-            <div className="payment-methods">
-              <p className="payment-title">Phương thức thanh toán:</p>
-              <div className="payment-options">
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "momo" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="momo"
-                    checked={paymentMethod === "momo"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon momo-icon">
-                    <span>MOMO</span>
-                  </div>
-                </label>
 
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "visa" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="visa"
-                    checked={paymentMethod === "visa"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon visa-icon">
-                    <FaCcVisa />
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "vnpay" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="vnpay"
-                    checked={paymentMethod === "vnpay"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon vnpay-icon">
-                    <span>VNPAY</span>
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "bank" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="bank"
-                    checked={paymentMethod === "bank"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon bank-icon">
-                    <FaQrcode />
-                    <span>QR Bank</span>
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "cod" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="cod"
-                    checked={paymentMethod === "cod"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon cod-icon">
-                    <FaMoneyBillWave />
-                    <span>Thanh toán khi nhận hàng</span>
-                  </div>
-                </label>
-              </div>
-            </div>
 
             <button
               className="checkout-btn"
@@ -350,7 +262,7 @@ const CartPage = () => {
                   selectedItems.has(item.id)
                 );
                 localStorage.setItem("cartItems", JSON.stringify(itemsToCheckout));
-                localStorage.setItem("paymentMethod", paymentMethod);
+
                 localStorage.setItem("discountCode", discountCode);
                 localStorage.setItem(
                   "discountAmount",

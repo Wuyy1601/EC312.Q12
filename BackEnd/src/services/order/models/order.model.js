@@ -27,6 +27,7 @@ const orderSchema = new mongoose.Schema(
     },
     items: [orderItemSchema],
     totalAmount: { type: Number, required: true },
+    cardFee: { type: Number, default: 0 },
     discountCode: { type: String, default: null },
     discountAmount: { type: Number, default: 0 },
     paymentMethod: { type: String, required: true, enum: ["momo", "visa", "vnpay", "bank", "cod"] },
@@ -37,11 +38,11 @@ const orderSchema = new mongoose.Schema(
     note: { type: String, default: "" },
     giftMessage: {
       enabled: { type: Boolean, default: false },
+      message: { type: String, default: "" },
+      design: { type: String, default: "" },
       recipientName: { type: String, default: "" },
       relationship: { type: String, default: "" },
       occasion: { type: String, default: "" },
-      message: { type: String, default: "" },
-      cardDesign: { type: String, default: "classic" },
     },
   },
   { timestamps: true }

@@ -11,6 +11,10 @@ const routers = [
     component: lazy(() => import("@pages/CartPage")),
   },
   {
+    path: "/products",
+    component: lazy(() => import("@pages/ProductsPage")),
+  },
+  {
     path: "/checkout",
     component: lazy(() => import("@pages/CheckoutPage")),
   },
@@ -93,6 +97,10 @@ export const adminDashboardRoutes = [
   {
     path: "orders",
     component: lazy(() => import("@pages/admin/AdminOrders")),
+  },
+  {
+    path: "templates",
+    component: lazy(() => import("@pages/admin/AdminTemplates")),
   },
 ];
 

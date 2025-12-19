@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaHeart, FaArrowLeft } from "react-icons/fa";
+import { FaShoppingCart, FaHeart, FaArrowLeft, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import ProductReviews from "@components/ProductReviews";
+import BundleModal from "@components/BundleModal";
 import "./ProductDetailPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
@@ -12,58 +13,126 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  
+  // Image Carousel State
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Initialize allImages
+  // Combine main product images (if any) and bundle item images
+  const allImages = React.useMemo(() => {
+    if (!product) return [];
+    let images = [];
+    
+    // Add product's own images
+    if (product.images && product.images.length > 0) {
+      images = [...product.images];
+    } else if (product.image) {
+      images = [product.image];
+    } else if (product.primaryImage) {
+      images = [product.primaryImage];
+    }
+
+    // Add bundle items' images
+    if (product.isBundle && product.bundleItems) {
+      product.bundleItems.forEach(item => {
+        if (item.product && item.product.image) {
+          images.push(item.product.image);
+        }
+      });
+    }
+    
+    // Remove duplicates and filter valid
+    return [...new Set(images)].filter(Boolean);
+  }, [product]);
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  // Bundle Modal State
+  const [isBundleModalOpen, setIsBundleModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check logged in user
     const userData = localStorage.getItem("user");
     if (userData) setUser(JSON.parse(userData));
-
-    // Fetch product detail
     fetchProduct();
   }, [id]);
 
   const fetchProduct = async () => {
     try {
-      // Vì API getOneProduct chưa chắc đã public, tạm thời fetch list rồi find nếu API getOne chưa có
-      // Nhưng chuẩn là GET /api/products/:id
-      // Trước mắt giả lập fetch từ data mẫu nếu chưa có API backend real cho detail
-      // Hoặc gọi API:
       const res = await fetch(`${API_URL}/api/products/${id}`);
       const data = await res.json();
       if (data.success) {
-        setProduct(data.product);
-      } else {
-        // Fallback or demo data if API fail/not exist
-        // setProduct(demoProduct);
+        setProduct(data.data);
       }
     } catch (error) {
       console.error("Fetch product error:", error);
+      alert("Lỗi khi tải sản phẩm: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const addToCart = () => {
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://via.placeholder.com/500";
+    if (imagePath.startsWith("http")) return imagePath;
+    const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${API_URL}${path}`;
+  };
+
+  const handleAddToCartClick = () => {
+    if (product.isBundle && product.bundleItems?.length > 0) {
+      setIsBundleModalOpen(true);
+    } else {
+      addToCart(product);
+      alert("Đã thêm vào giỏ hàng!");
+    }
+  };
+
+  const handleBuyNowClick = () => {
+    if (product.isBundle && product.bundleItems?.length > 0) {
+      setIsBundleModalOpen(true);
+    } else {
+      addToCart(product);
+      navigate("/cart");
+    }
+  };
+
+  const addToCart = (productToAdd) => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = cart.find((item) => item.id === product._id);
+    const existingItem = isBundleModalOpen 
+      ? null 
+      : cart.find((item) => item.id === productToAdd._id || item.id === productToAdd.id);
     
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
       cart.push({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        image: product.primaryImage || product.image || "https://via.placeholder.com/150",
+        id: productToAdd._id || productToAdd.id,
+        name: productToAdd.name,
+        price: productToAdd.price,
+        image: productToAdd.primaryImage || productToAdd.image || "https://via.placeholder.com/150",
         quantity: 1,
+        isBundle: productToAdd.isBundle,
+        selectedItems: productToAdd.selectedItems,
+        bundleDescription: productToAdd.bundleDescription,
       });
     }
     
     localStorage.setItem("cart", JSON.stringify(cart));
-    // Dispatch event to update header cart count
     window.dispatchEvent(new Event("storage"));
-    alert("Đã thêm vào giỏ hàng!");
+    
+    if (isBundleModalOpen) {
+      setIsBundleModalOpen(false);
+      alert("Đã thêm Bundle vào giỏ hàng!");
+    }
   };
+
+  const currentImageUrl = allImages.length > 0 ? getImageUrl(allImages[currentImageIndex]) : "https://via.placeholder.com/500";
 
   if (loading) return <div className="loading-page">Đang tải...</div>;
   if (!product) return <div className="error-page">Không tìm thấy sản phẩm <button onClick={() => navigate("/")}>Về trang chủ</button></div>;
@@ -72,20 +141,47 @@ const ProductDetailPage = () => {
     <div className="product-detail-page">
       <div className="container">
         <button className="back-btn" onClick={() => navigate(-1)}>
-          <FaArrowLeft /> Quay lại
+          <i className="fa-solid fa-arrow-left"></i> Quay lại
         </button>
 
         <div className="product-main-content">
           {/* Left Column: Images */}
           <div className="product-gallery">
             <div className="main-image-frame">
+              {allImages.length > 1 && (
+                <button className="gallery-nav-btn prev-btn" onClick={handlePrevImage}>
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+              )}
+              
               <img 
-                src={product.primaryImage || product.image} 
+                src={currentImageUrl} 
                 alt={product.name} 
                 className="main-image"
               />
+              
+              {allImages.length > 1 && (
+                <button className="gallery-nav-btn next-btn" onClick={handleNextImage}>
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              )}
+              
               <div className="frame-decoration"></div>
             </div>
+            {/* Thumbnails (Optional but helpful) */}
+            {allImages.length > 1 && (
+              <div className="gallery-thumbnails">
+                {allImages.map((img, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`thumbnail-item ${idx === currentImageIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                  >
+                    <img src={getImageUrl(img)} alt={`Thumbnail ${idx}`} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Right Column: Info & Paper Note */}
@@ -104,14 +200,8 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="actions">
-              <button className="buy-now-btn" onClick={() => { addToCart(); navigate("/cart"); }}>
+              <button className="buy-now-btn" onClick={handleBuyNowClick}>
                 MUA NGAY
-              </button>
-              <button className="add-cart-btn" onClick={addToCart}>
-                <FaShoppingCart />
-              </button>
-              <button className="wishlist-btn">
-                <FaHeart />
               </button>
             </div>
 
@@ -120,6 +210,18 @@ const ProductDetailPage = () => {
               <div className="paper-content">
                 <h3>Mô tả sản phẩm</h3>
                 <p>{product.description}</p>
+                {product.isBundle && product.bundleItems?.length > 0 && (
+                  <div className="bundle-includes">
+                    <strong>Set bao gồm:</strong>
+                    <ul>
+                      {product.bundleItems.map((item, idx) => (
+                        <li key={idx}>
+                          {item.quantity}x {item.product?.name || "Sản phẩm"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -127,6 +229,14 @@ const ProductDetailPage = () => {
 
         {/* Reviews Section */}
         <ProductReviews productId={product._id} user={user} />
+
+        {/* Bundle Modal */}
+        <BundleModal 
+          product={product} 
+          isOpen={isBundleModalOpen} 
+          onClose={() => setIsBundleModalOpen(false)}
+          onAddToCart={addToCart}
+        />
       </div>
     </div>
   );

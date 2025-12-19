@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "@components/ProductCard";
+import BundleModal from "@components/BundleModal";
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -45,6 +47,33 @@ const HomePage = () => {
     return () => clearInterval(timer);
   }, []);
 
+
+
+  // Placeholder categories
+  // For now keeping static as requested but moved inside component
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/categories`);
+        const data = await res.json();
+        if (data.success) {
+          setCategories(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        // Fallback or empty
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  const handleCategoryClick = (categoryId) => {
+    navigate(`/products?category=${categoryId}`);
+  };
+
   // Sample data for banner
   const bannerImages = [
     {
@@ -64,154 +93,90 @@ const HomePage = () => {
     },
   ];
 
-  // Sample data for categories
-  const categories = [
-    {
-      id: 1,
-      name: "Gấu bông",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Gau",
-    },
-    {
-      id: 2,
-      name: "Hoa",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Hoa",
-    },
-    {
-      id: 3,
-      name: "Quà tặng",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Qua",
-    },
-    {
-      id: 4,
-      name: "Chocolate",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Choco",
-    },
-    {
-      id: 5,
-      name: "Trang sức",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Trang+suc",
-    },
-    {
-      id: 6,
-      name: "Khác",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Khac",
-    },
-    {
-      id: 7,
-      name: "Combo",
-      image: "https://via.placeholder.com/80/FFB6C1/FFFFFF?text=Combo",
-    },
-  ];
+  // API URL
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-  // Sample data for new arrivals
-  const newArrivals = [
-    {
-      id: 1,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Product+1",
-    },
-    {
-      id: 2,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Product+2",
-    },
-    {
-      id: 3,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Product+3",
-    },
-    {
-      id: 4,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Product+4",
-    },
-    {
-      id: 5,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Product+5",
-    },
-    {
-      id: 6,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Product+6",
-    },
-    {
-      id: 7,
-      name: "Set quà tặng Valentine",
-      price: 599000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Product+7",
-    },
-  ];
+  // Data state
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample data for featured products
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Combo quà Giáng Sinh",
-      price: 1200000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Featured+1",
-    },
-    {
-      id: 2,
-      name: "Hoa hồng cao cấp",
-      price: 850000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Featured+2",
-    },
-    {
-      id: 3,
-      name: "Set quà Noel",
-      price: 950000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Featured+3",
-    },
-    {
-      id: 4,
-      name: "Gấu bông cao cấp",
-      price: 750000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Featured+4",
-    },
-    {
-      id: 5,
-      name: "Combo Valentine",
-      price: 1100000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Featured+5",
-    },
-    {
-      id: 6,
-      name: "Set quà sinh nhật",
-      price: 890000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Featured+6",
-    },
-    {
-      id: 7,
-      name: "Hộp quà đặc biệt",
-      price: 1300000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Featured+7",
-    },
-    {
-      id: 8,
-      name: "Bó hoa tulip",
-      price: 680000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Featured+8",
-    },
-    {
-      id: 9,
-      name: "Gấu bông khổng lồ",
-      price: 1500000,
-      image: "https://via.placeholder.com/250/E8B4D9/FFFFFF?text=Featured+9",
-    },
-    {
-      id: 10,
-      name: "Set quà công sở",
-      price: 920000,
-      image: "https://via.placeholder.com/250/D4A5C7/FFFFFF?text=Featured+10",
-    },
-  ];
+  // Fetch Products
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch products, sort by date for new arrivals, and maybe featured flag for featured
+        const res = await fetch(`${API_URL}/api/products`);
+        const data = await res.json();
+        
+        if (data.success) {
+          // Mock logic: Newest 7 for Flash Sale, others for Featured
+          // In real world, use query params limit/sort
+          // Filter ONLY bundles as requested
+          const bundleProducts = data.data.filter(p => p.isBundle);
+          
+          setNewArrivals(bundleProducts.slice(0, 10)); 
+          setFeaturedProducts(bundleProducts);
+        }
+      } catch (error) {
+        console.error("Fetch home data error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+
+
+
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (product) => {
+    if (product.isBundle) {
+      setSelectedProductForModal(product);
+      setIsModalOpen(true);
+    } else {
+      // Direct add to cart
+      addToCart(product);
+    }
+  };
+
+  const addToCart = (productToAdd) => {
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    
+    // Check for existing item
+    const existingItem = productToAdd.isBundle 
+      ? null // Always add new line for bundles with potentially different options
+      : cart.find((item) => (item.id === productToAdd._id || item.id === productToAdd.id));
+    
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({
+        id: productToAdd._id || productToAdd.id,
+        name: productToAdd.name,
+        price: productToAdd.price,
+        image: productToAdd.primaryImage || productToAdd.image || "https://via.placeholder.com/150",
+        quantity: 1,
+        isBundle: productToAdd.isBundle,
+        selectedItems: productToAdd.selectedItems,
+        bundleDescription: productToAdd.bundleDescription,
+      });
+    }
+    
+    localStorage.setItem("cart", JSON.stringify(cart));
+    window.dispatchEvent(new Event("storage"));
+    
+    if (isModalOpen) {
+      setIsModalOpen(false);
+      alert("Đã thêm Bundle vào giỏ hàng!");
+    } else {
+      alert("Đã thêm sản phẩm vào giỏ hàng!");
+    }
+  };
 
   const scroll = (direction, ref) => {
     const container = ref.current;
@@ -242,7 +207,12 @@ const HomePage = () => {
         <div className="container">
           <div className="categories-grid">
             {categories.map((category) => (
-              <div key={category.id} className="category-item">
+              <div 
+                key={category._id || category.id} 
+                className="category-item" 
+                onClick={() => handleCategoryClick(category._id)}
+                style={{ cursor: "pointer" }}
+              >
                 <img src={category.image} alt={category.name} />
                 <p>{category.name}</p>
               </div>
@@ -282,24 +252,25 @@ const HomePage = () => {
                 className="scroll-btn"
                 onClick={() => scroll("left", newArrivalsRef)}
               >
-                <FaChevronLeft />
+                <i className="fa-solid fa-chevron-left" style={{ color: "#333", fontSize: "20px" }}></i>
               </button>
               <button
                 className="scroll-btn"
                 onClick={() => scroll("right", newArrivalsRef)}
               >
-                <FaChevronRight />
+                <i className="fa-solid fa-chevron-right" style={{ color: "#333", fontSize: "20px" }}></i>
               </button>
             </div>
           </div>
           <div className="products-scroll-container" ref={newArrivalsRef}>
             {newArrivals.map((product) => (
               <ProductCard
-                key={product.id}
+                key={product._id || product.id}
                 product={product}
                 type="flash-sale"
                 showDiscount={true}
                 discountPercent={50}
+                onAddToCart={handleOpenModal}
               />
             ))}
           </div>
@@ -316,28 +287,37 @@ const HomePage = () => {
                 className="scroll-btn"
                 onClick={() => scroll("left", featuredRef)}
               >
-                <FaChevronLeft />
+                <i className="fa-solid fa-chevron-left" style={{ color: "#333", fontSize: "20px" }}></i>
               </button>
               <button
                 className="scroll-btn"
                 onClick={() => scroll("right", featuredRef)}
               >
-                <FaChevronRight />
+                <i className="fa-solid fa-chevron-right" style={{ color: "#333", fontSize: "20px" }}></i>
               </button>
             </div>
           </div>
           <div className="products-scroll-container" ref={featuredRef}>
             {featuredProducts.map((product) => (
               <ProductCard
-                key={product.id}
+                key={product._id || product.id}
                 product={product}
                 type="featured"
                 showDiscount={false}
+                onAddToCart={handleOpenModal}
               />
             ))}
           </div>
         </div>
       </section>
+
+      {/* Bundle Modal */}
+      <BundleModal 
+        product={selectedProductForModal} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onAddToCart={addToCart}
+      />
     </div>
   );
 };
