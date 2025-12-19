@@ -157,30 +157,44 @@
 
 .social-icons {
   display: flex;
+  justify-content: center;
   gap: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .social-btn {
-  width: 45px;
-  height: 45px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: 2px solid #fff;
   background: #fff;
-  display: flex;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  padding: 0 !important;
+  margin: 0 10px;
+}
+
+.social-btn i {
+  font-size: 24px !important;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 1.5rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  width: 100%;
+  height: 100%;
 }
 
 .social-btn:hover {
-  transform: scale(1.1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(236, 64, 122, 0.3);
 }
 
-.social-btn.google { color: #db4437; }
-.social-btn.facebook { color: #4267B2; }
+.social-btn.google { color: #db4437 !important; }
+.social-btn.facebook { color: #1877f2 !important; }
 
 .auth-footer {
   margin-top: 1.5rem;

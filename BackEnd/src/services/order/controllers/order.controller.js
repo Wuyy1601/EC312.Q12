@@ -1,7 +1,10 @@
 import Order from "../models/order.model.js";
+import Product from "../../product/models/product.model.js";
 import { createMomoPayment, verifyMomoSignature } from "../../payment/momoService.js";
 import { createVnpayPayment, verifyVnpaySignature, getVnpayResponseMessage } from "../../payment/vnpayService.js";
 import { sendOrderConfirmation, sendPaymentSuccess } from "../../notification/emailService.js";
+import fs from "fs";
+import path from "path";
 
 // Helper: Generate QR URL
 const generateQRUrl = (order) => {
@@ -22,16 +25,94 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "Thiếu thông tin đơn hàng" });
     }
 
+    // Handle Greeting Card Image Upload (Base64 -> File)
+    if (req.body.giftMessage && req.body.giftMessage.design && req.body.giftMessage.design.startsWith("data:image")) {
+       try {
+         const base64Data = req.body.giftMessage.design.replace(/^data:image\/\w+;base64,/, "");
+         const buffer = Buffer.from(base64Data, 'base64');
+         const fileName = `card_${Date.now()}_${Math.round(Math.random() * 1000)}.png`;
+         
+         const uploadDir = path.join(process.cwd(), 'src', 'uploads', 'gift-cards');
+         if (!fs.existsSync(uploadDir)){
+            await fs.promises.mkdir(uploadDir, { recursive: true });
+         }
+         
+         const filePath = path.join(uploadDir, fileName);
+         await fs.promises.writeFile(filePath, buffer);
+         
+         req.body.giftMessage.design = `/uploads/gift-cards/${fileName}`;
+         console.log("✅ Greeting card image saved:", fileName);
+       } catch (err) {
+         console.error("❌ Error saving greeting card image:", err);
+         // Fallback: If upload fails, try to save null or small placeholder to avoid DB crash
+         req.body.giftMessage.design = ""; 
+       }
+    }
+
+    // Check and Deduct Stock
+    // Check and Deduct Stock
+    for (const item of items) {
+      const productId = item.product?._id || item.product;
+      
+      let product;
+      try {
+         product = await Product.findById(productId);
+      } catch (err) {
+         console.error("Invalid Product ID:", productId, err);
+         return res.status(400).json({ success: false, message: `ID sản phẩm không hợp lệ: ${productId}` });
+      }
+      
+      if (!product) {
+         return res.status(400).json({ success: false, message: `Sản phẩm không tồn tại (ID: ${productId})` });
+      }
+
+      const qty = Number(item.quantity) || 1;
+
+      if (product.isBundle) {
+        if (product.bundleItems && product.bundleItems.length > 0) {
+           // Check all sub-items first
+           for (const subItem of product.bundleItems) {
+             if (!subItem.product) continue;
+             
+             const subProduct = await Product.findById(subItem.product);
+             if (subProduct) {
+               const subQty = Number(subItem.quantity) || 1;
+               const required = subQty * qty;
+               
+               if (subProduct.stock < required) {
+                 return res.status(400).json({ success: false, message: `Sản phẩm ${subProduct.name} (trong Combo) không đủ hàng` });
+               }
+             }
+           }
+           // Deduct
+           for (const subItem of product.bundleItems) {
+             if (!subItem.product) continue;
+             const subQty = Number(subItem.quantity) || 1;
+             await Product.findByIdAndUpdate(subItem.product, { $inc: { stock: -(subQty * qty) } });
+           }
+        }
+      } else {
+        if (product.stock < qty) {
+          return res.status(400).json({ success: false, message: `Sản phẩm ${product.name} không đủ hàng (Còn: ${product.stock})` });
+        }
+        await Product.findByIdAndUpdate(productId, { $inc: { stock: -qty } });
+      }
+    }
+
     const order = new Order({
       userId: req.body.userId || null,
       customerInfo,
-      items,
+      items: items.map(item => ({
+        ...item,
+        productId: item.product?._id || item.product
+      })),
       totalAmount,
       discountCode: discountCode || null,
       discountAmount: discountAmount || 0,
       paymentMethod,
       note: note || "",
       giftMessage: req.body.giftMessage || { enabled: false },
+      orderStatus: paymentMethod === "cod" ? "preparing" : "pending",
     });
 
     await order.save();
@@ -374,6 +455,59 @@ export const simulatePayment = async (req, res) => {
   }
 };
 
-export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook, getAllOrders, updateOrderStatus, deleteOrder, simulatePayment };
+// Cancel Order (User)
+export const cancelOrder = async (req, res) => {
+  try {
+    const { orderCode } = req.params;
+    const { reason } = req.body;
+    
+    const order = await Order.findOne({ orderCode });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+
+    // Only allow canceling if status is pending or confirmed
+    const allowedStatuses = ["pending", "confirmed"];
+    if (!allowedStatuses.includes(order.orderStatus)) {
+      return res.status(400).json({ success: false, message: "Đơn hàng đang xử lý hoặc đã giao, không thể hủy" });
+    }
+
+    // Check ownership if needed (req.user), but orderCode is fairly secure if unique.
+    
+    // Restore Stock
+    if (order.items) {
+      for (const item of order.items) {
+        try {
+          const productId = item.productId || item.product;
+          const product = await Product.findById(productId);
+          const qty = item.quantity;
+
+          if (product) {
+            if (product.isBundle && product.bundleItems) {
+              for (const subItem of product.bundleItems) {
+                await Product.findByIdAndUpdate(subItem.product, { $inc: { stock: (subItem.quantity * qty) } });
+              }
+            } else {
+              await Product.findByIdAndUpdate(productId, { $inc: { stock: qty } });
+            }
+          }
+        } catch (err) {
+          console.error("Error restoring stock for item:", item, err);
+        }
+      }
+    }
+
+    order.orderStatus = "cancelled";
+    order.note = order.note ? order.note + `\n[Khách hủy: ${reason || "Không lý do"}]` : `[Khách hủy: ${reason || "Không lý do"}]`;
+    await order.save();
+
+    res.json({ success: true, message: "Hủy đơn hàng thành công", data: order });
+  } catch (error) {
+    console.error("Cancel order error:", error);
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { createOrder, getOrder, getMyOrders, momoIPN, vnpayIPN, vnpayReturn, checkPaymentStatus, generateGreetingsAPI, sepayWebhook, getAllOrders, updateOrderStatus, deleteOrder, simulatePayment, cancelOrder };
 
 

@@ -3,11 +3,13 @@ import { useLocation } from "react-router-dom";
 import { FaFilter, FaStar } from "react-icons/fa";
 import ProductCard from "@components/ProductCard";
 import BundleModal from "@components/BundleModal";
+import { useCart } from "../context/CartContext";
 import "./ProductsPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 const ProductsPage = () => {
+  const { addToCart } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -33,36 +35,7 @@ const ProductsPage = () => {
     }
   };
 
-  const addToCart = (productToAdd) => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = productToAdd.isBundle 
-      ? null 
-      : cart.find((item) => (item.id === productToAdd._id || item.id === productToAdd.id));
-    
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        id: productToAdd._id || productToAdd.id,
-        name: productToAdd.name,
-        price: productToAdd.price,
-        image: productToAdd.primaryImage || productToAdd.image || "https://via.placeholder.com/150",
-        quantity: 1,
-        isBundle: productToAdd.isBundle,
-        selectedItems: productToAdd.selectedItems,
-        bundleDescription: productToAdd.bundleDescription,
-      });
-    }
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("storage"));
-    
-    if (isModalOpen) {
-      setIsModalOpen(false);
-      alert("Đã thêm Bundle vào giỏ hàng!");
-    } else {
-      alert("Đã thêm sản phẩm vào giỏ hàng!");
-    }
-  };
+
 
 
   const location = useLocation();
@@ -71,9 +44,13 @@ const ProductsPage = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const categoryParam = params.get("category");
-    if (categoryParam) {
-      setFilters(prev => ({ ...prev, category: categoryParam }));
-    }
+    const searchParam = params.get("q") || params.get("search");
+
+    setFilters(prev => ({
+      ...prev,
+      category: categoryParam || "",
+      search: searchParam || ""
+    }));
   }, [location.search]);
 
   // Fetch Categories for Filter
@@ -107,6 +84,15 @@ const ProductsPage = () => {
       if (data.success) {
         let sortedProducts = data.data.filter(p => p.isBundle); // Filter ONLY bundles
         
+        // Client-side Search Filtering
+        if (filters.search) {
+           const lowerSearch = filters.search.toLowerCase().trim();
+           sortedProducts = sortedProducts.filter(p => 
+             p.name.toLowerCase().includes(lowerSearch) || 
+             (p.description && p.description.toLowerCase().includes(lowerSearch))
+           );
+        }
+
         // Client-side Filtering
         // Filter by Rating
         if (filters.rating > 0) {

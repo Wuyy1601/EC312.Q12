@@ -3,11 +3,13 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import ProductCard from "@components/ProductCard";
 import BundleModal from "@components/BundleModal";
+import { useCart } from "../context/CartContext";
 import "./HomePage.css";
 
 const HomePage = () => {
   const newArrivalsRef = useRef(null);
   const featuredRef = useRef(null);
+  const { addToCart } = useCart();
 
   // Countdown timer state
   const [timeLeft, setTimeLeft] = useState({
@@ -49,47 +51,24 @@ const HomePage = () => {
 
 
 
-  // Placeholder categories
-  // For now keeping static as requested but moved inside component
-  const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch(`${API_URL}/api/categories`);
-        const data = await res.json();
-        if (data.success) {
-          setCategories(data.data);
-        }
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-        // Fallback or empty
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  const handleCategoryClick = (categoryId) => {
-    navigate(`/products?category=${categoryId}`);
-  };
 
   // Sample data for banner
   const bannerImages = [
     {
       id: 1,
-      image: "https://via.placeholder.com/400x250/E8B4D9/FFFFFF?text=Banner+1",
-      alt: "Banner 1",
+      image: "https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=800&q=80",
+      alt: "Winter Gift Collection",
     },
     {
       id: 2,
-      image: "https://via.placeholder.com/400x250/D4A5C7/FFFFFF?text=Banner+2",
-      alt: "Banner 2",
+      image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80",
+      alt: "New Arrivals",
     },
     {
       id: 3,
-      image: "https://via.placeholder.com/400x250/C896B8/FFFFFF?text=Banner+3",
-      alt: "Banner 3",
+      image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=800&q=80",
+      alt: "Romantic Gifts",
     },
   ];
 
@@ -144,39 +123,7 @@ const HomePage = () => {
     }
   };
 
-  const addToCart = (productToAdd) => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    
-    // Check for existing item
-    const existingItem = productToAdd.isBundle 
-      ? null // Always add new line for bundles with potentially different options
-      : cart.find((item) => (item.id === productToAdd._id || item.id === productToAdd.id));
-    
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        id: productToAdd._id || productToAdd.id,
-        name: productToAdd.name,
-        price: productToAdd.price,
-        image: productToAdd.primaryImage || productToAdd.image || "https://via.placeholder.com/150",
-        quantity: 1,
-        isBundle: productToAdd.isBundle,
-        selectedItems: productToAdd.selectedItems,
-        bundleDescription: productToAdd.bundleDescription,
-      });
-    }
-    
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("storage"));
-    
-    if (isModalOpen) {
-      setIsModalOpen(false);
-      alert("Đã thêm Bundle vào giỏ hàng!");
-    } else {
-      alert("Đã thêm sản phẩm vào giỏ hàng!");
-    }
-  };
+
 
   const scroll = (direction, ref) => {
     const container = ref.current;
@@ -202,24 +149,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="categories-section">
-        <div className="container">
-          <div className="categories-grid">
-            {categories.map((category) => (
-              <div 
-                key={category._id || category.id} 
-                className="category-item" 
-                onClick={() => handleCategoryClick(category._id)}
-                style={{ cursor: "pointer" }}
-              >
-                <img src={category.image} alt={category.name} />
-                <p>{category.name}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Flash Sale Section with Horizontal Scroll */}
       <section className="new-arrivals-section">

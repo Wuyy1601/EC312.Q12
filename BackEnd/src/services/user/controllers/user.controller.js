@@ -186,4 +186,42 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser };
+// Social Login
+export const socialLogin = async (req, res) => {
+  try {
+    const { email, username, avatar, uid } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email là bắt buộc" });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const hashedPassword = await hashPassword(randomPassword);
+      
+      user = await User.create({
+        username: username || email.split("@")[0],
+        email,
+        password: hashedPassword,
+        avatar: avatar || "",
+      });
+    }
+
+    const token = generateToken({ id: user._id, email: user.email, username: user.username, role: user.role || "user" });
+
+    res.status(200).json({
+      success: true,
+      message: "Đăng nhập Social thành công",
+      token,
+      data: { id: user._id, username: user.username, email: user.email, role: user.role || "user", avatar: user.avatar },
+    });
+
+  } catch (error) {
+    console.error("Social login error:", error);
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser, socialLogin };

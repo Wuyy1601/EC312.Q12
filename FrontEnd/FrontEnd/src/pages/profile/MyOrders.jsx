@@ -68,6 +68,35 @@ const MyOrders = () => {
     }
   };
 
+  // Hủy đơn hàng
+  const handleCancelOrder = async (order) => {
+    const reason = prompt("Vui lòng nhập lý do hủy đơn (nếu có):");
+    if (reason === null) return; // User pressed Cancel
+
+    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+
+    try {
+      const res = await fetch(`${API_URL}/api/orders/${order.orderCode}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Hủy đơn hàng thành công!");
+        setOrders(orders.map(o => o.orderCode === order.orderCode ? { ...o, orderStatus: "cancelled" } : o));
+        if (selectedOrder?.orderCode === order.orderCode) {
+          setSelectedOrder({ ...selectedOrder, orderStatus: "cancelled" });
+        }
+      } else {
+        alert(data.message || "Không thể hủy đơn hàng");
+      }
+    } catch (error) {
+      console.error("Cancel order error:", error);
+      alert("Lỗi kết nối");
+    }
+  };
+
   // Kiểm tra thanh toán
   useEffect(() => {
     if (!paymentOrder) return;
@@ -192,7 +221,7 @@ const MyOrders = () => {
 
               <div className="order-actions">
                 {/* Nút thanh toán nếu chưa thanh toán và không phải COD */}
-                {order.paymentStatus === "pending" && order.paymentMethod !== "cod" && (
+                {order.orderStatus !== "cancelled" && order.paymentStatus === "pending" && order.paymentMethod !== "cod" && (
                   <button className="pay-now-btn" onClick={() => handlePayNow(order)}>
                     <FaCreditCard /> Thanh toán ngay
                   </button>
@@ -200,6 +229,16 @@ const MyOrders = () => {
                 <button className="view-detail-btn" onClick={() => setSelectedOrder(order)}>
                   Xem chi tiết <FaChevronRight />
                 </button>
+                
+                {(order.orderStatus === "pending" || order.orderStatus === "confirmed") && (
+                  <button 
+                    className="cancel-btn"
+                    onClick={() => handleCancelOrder(order)}
+                    style={{ marginLeft: '8px', padding: '8px 12px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+                  >
+                    Hủy đơn
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -334,12 +373,23 @@ const MyOrders = () => {
             </div>
 
             {/* Nút thanh toán trong modal chi tiết */}
-            {selectedOrder.paymentStatus === "pending" && selectedOrder.paymentMethod !== "cod" && (
+            {selectedOrder.orderStatus !== "cancelled" && selectedOrder.paymentStatus === "pending" && selectedOrder.paymentMethod !== "cod" && (
               <button 
                 className="pay-now-btn modal-pay-btn" 
                 onClick={() => { setSelectedOrder(null); handlePayNow(selectedOrder); }}
               >
                 <FaCreditCard /> Thanh toán ngay
+              </button>
+            )}
+
+            {/* Nút hủy trong modal */}
+            {(selectedOrder.orderStatus === "pending" || selectedOrder.orderStatus === "confirmed") && (
+              <button 
+                className="cancel-btn-modal"
+                onClick={() => handleCancelOrder(selectedOrder)}
+                style={{ marginRight: '10px', padding: '8px 16px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', borderRadius: '6px', cursor: 'pointer' }}
+              >
+                Hủy đơn hàng
               </button>
             )}
 

@@ -8,13 +8,23 @@ import {
   FaQrcode,
   FaMoneyBillWave,
 } from "react-icons/fa";
+import { useCart } from "../context/CartContext";
 import "./CartPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]);
+  const { cartItems, updateQuantity, removeFromCart } = useCart();
+  
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  
+  // Auto select all on initial load
+  useEffect(() => {
+     if (cartItems.length > 0 && selectedItems.size === 0) {
+        setSelectedItems(new Set(cartItems.map(i => i.id)));
+     }
+  }, [cartItems.length]);
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "https://via.placeholder.com/500";
@@ -23,36 +33,13 @@ const CartPage = () => {
     return `${API_URL}${path}`;
   };
 
-  // Load cart from local storage
-  useEffect(() => {
-    const loadCart = () => {
-      const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      setCartItems(storedCart);
-      // Default select all
-      if (storedCart.length > 0) {
-        setSelectedItems(new Set(storedCart.map((item) => item.id)));
-      }
-    };
-
-    loadCart();
-
-    // Listen for storage changes
-    window.addEventListener("storage", loadCart);
-    return () => window.removeEventListener("storage", loadCart);
-  }, []);
-
-  // State để track sản phẩm được chọn (mặc định chọn tất cả)
-  const [selectedItems, setSelectedItems] = useState(new Set());
-
   const [discountCode, setDiscountCode] = useState("");
   const [discount, setDiscount] = useState(0);
-
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN").format(price);
   };
 
-  // Toggle chọn/bỏ chọn sản phẩm
   const toggleSelectItem = (id) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
@@ -65,7 +52,6 @@ const CartPage = () => {
     });
   };
 
-  // Chọn/bỏ chọn tất cả
   const toggleSelectAll = () => {
     if (selectedItems.size === cartItems.length) {
       setSelectedItems(new Set());
@@ -74,27 +60,8 @@ const CartPage = () => {
     }
   };
 
-  const updateQuantity = (id, change) => {
-    setCartItems((items) => {
-      const newItems = items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      );
-      localStorage.setItem("cart", JSON.stringify(newItems));
-      window.dispatchEvent(new Event("storage"));
-      return newItems;
-    });
-  };
-
-  const removeItem = (id) => {
-    setCartItems((items) => {
-      const newItems = items.filter((item) => item.id !== id);
-      localStorage.setItem("cart", JSON.stringify(newItems));
-      window.dispatchEvent(new Event("storage"));
-      return newItems;
-    });
-    // Cũng xóa khỏi selectedItems
+  const handleRemoveItem = (id) => {
+    removeFromCart(id);
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       newSet.delete(id);
@@ -196,7 +163,7 @@ const CartPage = () => {
                   <td>
                     <button
                       className="delete-btn"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item.id)}
                     >
                       <i className="fa-solid fa-trash"></i>
                     </button>

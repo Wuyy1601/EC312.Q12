@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaHeart, FaArrowLeft, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaShoppingCart, FaHeart, FaArrowLeft, FaChevronLeft, FaChevronRight, FaCartPlus } from "react-icons/fa";
 import ProductReviews from "@components/ProductReviews";
 import BundleModal from "@components/BundleModal";
+import { useCart } from "../context/CartContext";
+import { calculateStock } from "../utils/productUtils";
 import "./ProductDetailPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +92,6 @@ const ProductDetailPage = () => {
       setIsBundleModalOpen(true);
     } else {
       addToCart(product);
-      alert("Đã thêm vào giỏ hàng!");
     }
   };
 
@@ -102,37 +104,12 @@ const ProductDetailPage = () => {
     }
   };
 
-  const addToCart = (productToAdd) => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existingItem = isBundleModalOpen 
-      ? null 
-      : cart.find((item) => item.id === productToAdd._id || item.id === productToAdd.id);
-    
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        id: productToAdd._id || productToAdd.id,
-        name: productToAdd.name,
-        price: productToAdd.price,
-        image: productToAdd.primaryImage || productToAdd.image || "https://via.placeholder.com/150",
-        quantity: 1,
-        isBundle: productToAdd.isBundle,
-        selectedItems: productToAdd.selectedItems,
-        bundleDescription: productToAdd.bundleDescription,
-      });
-    }
-    
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.dispatchEvent(new Event("storage"));
-    
-    if (isBundleModalOpen) {
-      setIsBundleModalOpen(false);
-      alert("Đã thêm Bundle vào giỏ hàng!");
-    }
-  };
+
 
   const currentImageUrl = allImages.length > 0 ? getImageUrl(allImages[currentImageIndex]) : "https://via.placeholder.com/500";
+  
+  const stock = calculateStock(product);
+  const isOutOfStock = stock <= 0;
 
   if (loading) return <div className="loading-page">Đang tải...</div>;
   if (!product) return <div className="error-page">Không tìm thấy sản phẩm <button onClick={() => navigate("/")}>Về trang chủ</button></div>;
@@ -199,9 +176,52 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            <div className="actions">
-              <button className="buy-now-btn" onClick={handleBuyNowClick}>
-                MUA NGAY
+            <div className="product-meta" style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>
+              <strong>Tình trạng: </strong>
+              {isOutOfStock ? (
+                <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Hết hàng</span>
+              ) : (
+                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Còn hàng ({stock})</span>
+              )}
+            </div>
+
+            <div className="actions" style={{ display: 'flex', gap: '1rem' }}>
+              <button 
+                className="add-to-cart-btn" 
+                onClick={handleAddToCartClick}
+                disabled={isOutOfStock}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  background: isOutOfStock ? '#e5e7eb' : '#fff',
+                  border: `2px solid ${isOutOfStock ? '#9ca3af' : '#d97706'}`,
+                  color: isOutOfStock ? '#9ca3af' : '#d97706',
+                  borderRadius: '8px',
+                  fontWeight: 'bold',
+                  cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  fontSize: '1rem'
+                }}
+              >
+                <FaCartPlus /> Thêm vào giỏ
+              </button>
+              <button 
+                className="buy-now-btn" 
+                onClick={handleBuyNowClick}
+                disabled={isOutOfStock}
+                style={{
+                   flex: 1,
+                   padding: '12px',
+                   background: isOutOfStock ? '#9ca3af' : '#d97706',
+                   border: 'none',
+                   color: '#fff',
+                   borderRadius: '8px',
+                   fontWeight: 'bold',
+                   cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                   fontSize: '1rem'
+                }}
+              >
+                {isOutOfStock ? "HẾT HÀNG" : "MUA NGAY"}
               </button>
             </div>
 

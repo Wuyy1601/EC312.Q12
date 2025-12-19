@@ -1,11 +1,12 @@
 import express from "express";
-import { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser } from "../controllers/user.controller.js";
+import { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser, socialLogin } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
 // Public routes
 router.post("/register", register);
 router.post("/login", login);
+router.post("/social-login", socialLogin);
 router.post("/admin-login", adminLogin);
 
 // Protected routes

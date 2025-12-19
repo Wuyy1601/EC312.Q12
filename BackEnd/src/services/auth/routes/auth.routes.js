@@ -2,7 +2,7 @@ import express from "express";
 import { 
   register, login, getProfile, updateProfile, changePassword, deleteMyAccount,
   forgotPassword, resetPassword, getAllUsers, authMiddleware, adminMiddleware, 
-  adminLogin, updateUser, deleteUser 
+  adminLogin, updateUser, deleteUser, socialLogin 
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -13,6 +13,7 @@ router.post("/login", login);
 router.post("/admin-login", adminLogin);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.post("/social-login", socialLogin);
 
 // Protected routes (require login)
 router.get("/me", authMiddleware, getProfile);

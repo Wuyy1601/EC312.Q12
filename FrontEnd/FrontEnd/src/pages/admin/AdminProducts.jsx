@@ -235,6 +235,25 @@ const AdminProducts = () => {
             {product.images?.length > 1 && <span className="image-count">+{product.images.length - 1}</span>}
             <div className="product-info">
               <h3>{product.name}</h3>
+              <div className="stock-info" style={{ fontSize: '0.9rem', color: '#666', marginBottom: '5px' }}>
+                <strong>Kho:</strong> {product.isBundle ? (
+                  <span title="Tính dựa trên sản phẩm con">{(() => {
+                    if (!product.bundleItems || product.bundleItems.length === 0) return 0;
+                    const stocks = product.bundleItems.map(item => {
+                      // Prioritize populated stock
+                      if (item.product && typeof item.product === 'object' && item.product.stock !== undefined) {
+                        return Math.floor(item.product.stock / item.quantity);
+                      }
+                      const subId = item.product?._id || item.product;
+                      const sub = singleProducts.find(p => p._id === subId) || products.find(p => p._id === subId);
+                      return sub ? Math.floor((sub.stock || 0) / item.quantity) : 0;
+                    });
+                    return Math.min(...stocks);
+                  })()} (Combo)</span>
+                ) : (
+                  <span>{product.stock || 0}</span>
+                )}
+              </div>
               <p className="price">{formatPrice(product.price)}</p>
               {product.isBundle && product.savings > 0 && (
                 <p className="savings">Tiết kiệm {formatPrice(product.savings)}</p>
@@ -280,7 +299,11 @@ const AdminProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Số lượng</label>
-                  <input name="stock" type="number" defaultValue={editingProduct?.stock || 0} />
+                  {isBundle ? (
+                     <input type="text" value="Tự động tính theo SP con" disabled style={{ background: '#f5f5f5', color: '#666' }} />
+                  ) : (
+                     <input name="stock" type="number" defaultValue={editingProduct?.stock || 0} />
+                  )}
                 </div>
               </div>
 

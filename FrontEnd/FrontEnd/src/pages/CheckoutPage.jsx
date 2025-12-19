@@ -8,17 +8,15 @@ import {
   FaCheck
 } from "react-icons/fa";
 import GreetingCardModal from "../components/GreetingCardModal";
+import { useCart } from "../context/CartContext";
 import "./CheckoutPage.css";
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
+  const { cartItems, removeFromCart, clearCart } = useCart();
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
-  // Cart loading
-  const [cartItems] = useState(() => {
-    const saved = localStorage.getItem("cartItems");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Removed local cartItems state to use Context source of truth
 
   // State
   const [customerInfo, setCustomerInfo] = useState({
@@ -111,7 +109,7 @@ const CheckoutPage = () => {
           userId: user?.id,
           customerInfo,
           items: cartItems.map(item => ({
-            productId: item.id,
+            product: item.id,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
@@ -122,7 +120,7 @@ const CheckoutPage = () => {
           shippingCost,
           paymentMethod,
           discountAmount: discount,
-          cardFee: cardFee, // Send card fee
+          cardFee: cardFee,
           giftMessage: giftMessage.enabled ? giftMessage : { enabled: false }
         }),
       });
@@ -135,11 +133,12 @@ const CheckoutPage = () => {
 
       if (paymentMethod === "cod") {
         setStep(3); // Success immediately
-        localStorage.removeItem("cartItems");
+        clearCart();
       } else if (data.paymentInfo?.payUrl) {
          window.location.href = data.paymentInfo.payUrl;
       } else {
         setStep(2); // Show QR
+        clearCart();
       }
 
     } catch (err) {
@@ -159,7 +158,7 @@ const CheckoutPage = () => {
         const data = await res.json();
         if (data.paymentStatus === "paid") {
           setStep(3);
-          localStorage.removeItem("cartItems");
+          clearCart();
         }
       } catch (e) {
         console.error(e);

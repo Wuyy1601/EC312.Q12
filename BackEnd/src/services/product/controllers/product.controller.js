@@ -22,7 +22,7 @@ export const getAllProducts = async (req, res) => {
 
     // Execute query with populate
     let productsQuery = Product.find(search ? { ...query, $text: { $search: search } } : query)
-      .populate("bundleItems.product", "name price image")
+      .populate("bundleItems.product", "name price image stock")
       .populate("category", "name slug");
 
     if (!search) {
@@ -77,7 +77,7 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate("bundleItems.product", "name price image description")
+      .populate("bundleItems.product", "name price image description stock")
       .populate("category", "name slug");
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
     res.json({ success: true, data: product });
@@ -199,7 +199,7 @@ export const deleteProduct = async (req, res) => {
 export const getSingleProducts = async (req, res) => {
   try {
     const products = await Product.find({ isActive: true, isBundle: { $ne: true } })
-      .select("name price image")
+      .select("name price image stock")
       .sort({ name: 1 });
     res.json({ success: true, data: products });
   } catch (error) {

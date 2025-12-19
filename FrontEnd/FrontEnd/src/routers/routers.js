@@ -15,6 +15,10 @@ const routers = [
     component: lazy(() => import("@pages/ProductsPage")),
   },
   {
+    path: "/search",
+    component: lazy(() => import("@pages/ProductsPage")),
+  },
+  {
     path: "/checkout",
     component: lazy(() => import("@pages/CheckoutPage")),
   },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
+import { useCart } from "../context/CartContext";
 import "./Header.css";
 
 // Random avatar nếu user không có
@@ -53,8 +54,8 @@ const Header = () => {
   };
 
   // Cart count
-  const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
-  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  // Cart count
+  const { cartCount } = useCart();
 
   return (
     <header className="header">

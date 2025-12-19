@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaGoogle, FaFacebookF } from 'react-icons/fa';
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider, facebookProvider } from "../../firebase.config";
 import logo from '../../assets/logo/logo.png';
@@ -59,19 +58,29 @@ const LoginPage = () => {
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      console.log('Google login success:', result.user);
-      // TODO: Gửi token Firebase đến backend để xác thực
-      // Tạm thời lưu thông tin user từ Google
-      const userData = {
-        id: result.user.uid,
-        email: result.user.email,
-        username: result.user.displayName,
-        avatar: result.user.photoURL,
-      };
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', await result.user.getIdToken());
-      navigate('/');
-      window.location.reload();
+      const user = result.user;
+      
+      const res = await fetch(`${API_URL}/api/auth/social-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          username: user.displayName,
+          avatar: user.photoURL,
+          uid: user.uid
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+        navigate('/');
+        window.location.reload();
+      } else {
+        setError(data.message || "Đăng nhập Google thất bại");
+      }
     } catch (error) {
       console.error("Google login error:", error);
       setError("Đăng nhập Google thất bại: " + error.message);
@@ -81,17 +90,29 @@ const LoginPage = () => {
   const handleFacebookLogin = async () => {
     try {
       const result = await signInWithPopup(auth, facebookProvider);
-      console.log('Facebook login success:', result.user);
-      const userData = {
-        id: result.user.uid,
-        email: result.user.email,
-        username: result.user.displayName,
-        avatar: result.user.photoURL,
-      };
-      localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('token', await result.user.getIdToken());
-      navigate('/');
-      window.location.reload();
+      const user = result.user;
+
+      const res = await fetch(`${API_URL}/api/auth/social-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          username: user.displayName,
+          avatar: user.photoURL,
+          uid: user.uid
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.data));
+        navigate('/');
+        window.location.reload();
+      } else {
+        setError(data.message || "Đăng nhập Facebook thất bại");
+      }
     } catch (error) {
       console.error("Facebook login error:", error);
       setError("Đăng nhập Facebook thất bại: " + error.message);
@@ -156,16 +177,14 @@ const LoginPage = () => {
           </button>
         </form>
 
-        <div className="social-login">
           <div className="social-icons">
             <button type="button" className="social-btn google" onClick={handleGoogleLogin}>
-              <FaGoogle />
+              <i className="fa-brands fa-google"></i>
             </button>
             <button type="button" className="social-btn facebook" onClick={handleFacebookLogin}>
-              <FaFacebookF />
+              <i className="fa-brands fa-facebook-f"></i>
             </button>
           </div>
-        </div>
 
         <div className="auth-footer">
           Chưa có tài khoản? 
