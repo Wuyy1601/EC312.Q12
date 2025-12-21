@@ -401,7 +401,7 @@ const CheckoutPage = () => {
         <div className="bank-info-box">
            <p>Ngân hàng: {paymentInfo?.bankName}</p>
            <p>Số TK: {paymentInfo?.accountNumber} <FaCopy onClick={() => copyToClipboard(paymentInfo?.accountNumber, 'acc')} /></p>
-           <p>Số Tiền: {formatPrice(total)} VND</p>
+           <p>Số Tiền: {formatPrice(paymentInfo?.amount || order?.totalAmount)} VND</p>
            <p>Nội dung: {paymentInfo?.transferContent}</p>
         </div>
         {checking && <p>Đang kiểm tra...</p>}

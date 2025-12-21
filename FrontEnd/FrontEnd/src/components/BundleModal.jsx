@@ -16,23 +16,35 @@ const BundleModal = ({ product, isOpen, onClose, onAddToCart }) => {
   }, [product, isOpen]);
 
   const handleToggleItem = (itemId, itemPrice, quantity) => {
-    // If checking would result in less than 2 items, prevent unchecking
-    if (selectedItems.length <= 2 && selectedItems.includes(itemId)) {
-      alert("Bundle phải có ít nhất 2 sản phẩm!");
+    // If checking would result in less than 1 item, prevent unchecking
+    if (selectedItems.length <= 1 && selectedItems.includes(itemId)) {
+      alert("Phải chọn ít nhất 1 sản phẩm!");
       return;
     }
 
     let newSelected;
-    let newPrice = currentPrice;
-
+    
     if (selectedItems.includes(itemId)) {
-      // Uncheck: Remove item and subtract price
+      // Uncheck
       newSelected = selectedItems.filter(id => id !== itemId);
-      newPrice -= (itemPrice * quantity);
     } else {
-      // Check: Add item and add price
+      // Check
       newSelected = [...selectedItems, itemId];
-      newPrice += (itemPrice * quantity);
+    }
+
+    // Recalculate Price
+    // Logic: If Full Bundle -> Product Price (Discount). Else -> Sum of Components.
+    const allIds = product.bundleItems.map(i => i.product._id);
+    const isFullBundle = allIds.length === newSelected.length && allIds.every(id => newSelected.includes(id));
+    
+    let newPrice = 0;
+    if (isFullBundle) {
+       newPrice = product.price;
+    } else {
+       // Sum of selected components (Original Price)
+       newPrice = product.bundleItems
+         .filter(item => newSelected.includes(item.product._id))
+         .reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
     }
 
     setSelectedItems(newSelected);
@@ -84,7 +96,19 @@ const BundleModal = ({ product, isOpen, onClose, onAddToCart }) => {
                   {isSelected && <i className="fa-solid fa-check"></i>}
                 </div>
                 
-                <img src={subProduct.image} alt={subProduct.name} className="item-thumb" />
+                <img 
+                  src={
+                    subProduct.image 
+                      ? (subProduct.image.startsWith('http') ? subProduct.image : `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}${subProduct.image}`)
+                      : "https://placehold.co/100x100?text=No+Image"
+                  } 
+                  alt={subProduct.name} 
+                  className="item-thumb" 
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src="https://placehold.co/100x100?text=No+Image";
+                  }}
+                />
                 
                 <div className="item-details">
                   <h4>{subProduct.name}</h4>
