@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
+import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox, FaCalendarAlt } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
 import { useCart } from "../context/CartContext";
 import "./Header.css";
@@ -31,7 +31,7 @@ const Header = () => {
         setUser(null);
       }
     };
-    
+
     checkAuth();
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
@@ -69,7 +69,8 @@ const Header = () => {
         <nav className="nav-menu">
           <Link to="/" className="nav-link">Trang chủ</Link>
           <Link to="/products" className="nav-link">Sản phẩm</Link>
-          <Link to="/spirit-consultant" className="nav-link spirit-link">✨ Tư Vấn Quà</Link>
+          <Link to="/calendar" className="nav-link">Lịch</Link>
+          <Link to="/spirit-consultant" className="nav-link spirit-link">Tư Vấn Quà</Link>
           <Link to="/contact" className="nav-link">Liên hệ</Link>
         </nav>
 
@@ -98,10 +99,10 @@ const Header = () => {
           {/* User Area */}
           {isLoggedIn ? (
             <div className="user-menu">
-              <img 
-                src={user?.avatar || getRandomAvatar(user?.id || user?.username)} 
-                alt={user?.username || "User"} 
-                className="avatar-img clickable" 
+              <img
+                src={user?.avatar || getRandomAvatar(user?.id || user?.username)}
+                alt={user?.username || "User"}
+                className="avatar-img clickable"
                 onClick={() => setShowDropdown(!showDropdown)}
               />
               {showDropdown && (
@@ -116,6 +117,9 @@ const Header = () => {
                     </Link>
                     <Link to="/profile/orders" className="dropdown-item" onClick={() => setShowDropdown(false)}>
                       <FaBox /> Đơn hàng
+                    </Link>
+                    <Link to="/calendar" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                      <FaCalendarAlt /> Lịch sự kiện
                     </Link>
                     <button className="dropdown-item logout-btn" onClick={handleLogout}>
                       <FaSignOutAlt /> Đăng xuất

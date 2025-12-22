@@ -34,6 +34,10 @@ const routers = [
     path: "/spirit-consultant",
     component: lazy(() => import("@pages/SpiritConsultant")),
   },
+  {
+    path: "/calendar",
+    component: lazy(() => import("@pages/CalendarPage")),
+  },
 ];
 
 // Admin pages (separate routes, no Layout)

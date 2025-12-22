@@ -7,22 +7,22 @@ dotenv.config();
 const transporter = nodemailer.createTransport(
   process.env.EMAIL_HOST
     ? {
-        // Mailtrap or custom SMTP
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT || 2525,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
-        },
-      }
+      // Mailtrap or custom SMTP
+      host: process.env.EMAIL_HOST,
+      port: process.env.EMAIL_PORT || 2525,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
+      },
+    }
     : {
-        // Gmail
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
-        },
-      }
+      // Gmail
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
+      },
+    }
 );
 
 /**
@@ -108,17 +108,16 @@ export const sendOrderConfirmation = async (order) => {
             <div class="order-info" style="background: #fff3e0;">
               <h3>Thanh toán:</h3>
               <p><strong>Phương thức:</strong> ${getPaymentMethodName(order.paymentMethod)}</p>
-              ${
-                order.paymentMethod !== "cod"
-                  ? `
+              ${order.paymentMethod !== "cod"
+        ? `
                 <p><strong>Nội dung chuyển khoản:</strong></p>
                 <p style="background: #8B1538; color: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 16px;">
                   ${order.getTransferContent()}
                 </p>
-                <p style="color: #666; font-size: 12px;">⚠️ Vui lòng chuyển khoản đúng nội dung để đơn hàng được xác nhận tự động.</p>
+                <p style="color: #666; font-size: 12px;">Vui lòng chuyển khoản đúng nội dung để đơn hàng được xác nhận tự động.</p>
               `
-                  : "<p>Thanh toán khi nhận hàng</p>"
-              }
+        : "<p>Thanh toán khi nhận hàng</p>"
+      }
             </div>
           </div>
           
@@ -242,7 +241,7 @@ export const sendResetPasswordEmail = async (email, username, resetUrl) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Reset Password - EC312 Shop",
+    subject: "Reset Password - Giftnity Shop",
     html: `
       <h2>Xin chào ${username},</h2>
       <p>Bạn đã yêu cầu reset password.</p>
@@ -263,9 +262,130 @@ export const sendResetPasswordEmail = async (email, username, resetUrl) => {
   await transporter.sendMail(mailOptions);
 };
 
+/**
+ * Gửi email nhắc nhở sự kiện đặc biệt
+ */
+export const sendEventReminder = async (user, event, daysUntil, giftSuggestions = null) => {
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+
+  const mailOptions = {
+    from: `"Giftnity" <${process.env.EMAIL_USER}>`,
+    to: user.email,
+    subject: `Nhắc nhở: ${event.title} - Còn ${daysUntil} ngày!`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #E8B4D9 0%, #8B1538 100%); padding: 30px; text-align: center; }
+          .header h1 { color: white; margin: 0; font-size: 28px; }
+          .content { padding: 30px; }
+          .event-box { background: #fff5f8; border-left: 4px solid #8B1538; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+          .event-title { font-size: 24px; color: #8B1538; font-weight: bold; margin-bottom: 10px; }
+          .days-until { font-size: 36px; color: #8B1538; font-weight: bold; text-align: center; margin: 20px 0; }
+          .gift-section { background: #f8f8f8; border-radius: 10px; padding: 20px; margin-top: 20px; }
+          .gift-item { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; }
+          .btn { display: inline-block; background: #8B1538; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; margin: 10px 5px; font-weight: bold; }
+          .footer { background: #f8f8f8; padding: 20px; text-align: center; color: #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Giftnity</h1>
+            <p style="color: white; margin: 10px 0 0;">Nhắc nhở sự kiện đặc biệt</p>
+          </div>
+          
+          <div class="content">
+            <div class="event-box">
+              <div class="event-title">${event.title}</div>
+              <p><strong>Loại sự kiện:</strong> ${getEventTypeName(event.eventType)}</p>
+              <p><strong>Ngày:</strong> ${new Date(event.date).toLocaleDateString("vi-VN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    })}</p>
+              ${event.notes ? `<p><strong>Ghi chú:</strong> ${event.notes}</p>` : ""}
+            </div>
+            
+            <div class="days-until">
+              Còn ${daysUntil} ngày! ⏰
+            </div>
+            
+            <p>Xin chào <strong>${user.username}</strong>,</p>
+            <p>Đây là lời nhắc nhở về sự kiện đặc biệt của bạn. Đừng quên chuẩn bị quà tặng thật ý nghĩa nhé!</p>
+            
+            ${giftSuggestions && giftSuggestions.items ? `
+            <div class="gift-section">
+              <h3 style="color: #8B1538; margin-top: 0;">💝 Gợi ý quà tặng phù hợp</h3>
+              ${giftSuggestions.items.map(item => `
+                <div class="gift-item">
+                  <strong>${item}</strong>
+                </div>
+              `).join("")}
+              
+              <div style="text-align: center; margin-top: 20px;">
+                <a href="${frontendUrl}/products?category=${giftSuggestions.category}" class="btn">
+                  Xem quà tặng
+                </a>
+                <a href="${frontendUrl}/calendar" class="btn" style="background: #4CAF50;">
+                  Xem lịch
+                </a>
+              </div>
+            </div>
+            ` : `
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="${frontendUrl}/products" class="btn">
+                Xem quà tặng
+              </a>
+              <a href="${frontendUrl}/calendar" class="btn" style="background: #4CAF50;">
+                Xem lịch
+              </a>
+            </div>
+            `}
+          </div>
+          
+          <div class="footer">
+            <p>Bạn nhận được email này vì đã đăng ký nhắc nhở sự kiện trên Giftnity</p>
+            <p>© 2025 Giftnity - Quà tặng ý nghĩa</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  try {
+    const result = await transporter.sendMail(mailOptions);
+    console.log("Email nhắc nhở sự kiện đã gửi:", result.messageId);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error("Lỗi gửi email nhắc nhở:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Helper: Lấy tên loại sự kiện
+ */
+function getEventTypeName(type) {
+  const types = {
+    birthday: "Sinh nhật",
+    anniversary: "Kỷ niệm",
+    holiday: "Ngày lễ",
+    custom: "Sự kiện đặc biệt",
+  };
+  return types[type] || type;
+}
+
 export default {
   sendOrderConfirmation,
   sendPaymentSuccess,
   sendResetPasswordEmail,
+  sendEventReminder,
 };
 

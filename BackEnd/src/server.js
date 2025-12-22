@@ -14,6 +14,9 @@ import geminiApp from "./services/gemini/index.js";
 import templateApp from "./services/template/index.js";
 import spiritApp from "./services/spirit/index.js";
 import cardTemplateApp from "./services/cardTemplate/index.js";
+import calendarApp from "./services/calendar/index.js";
+import { startReminderScheduler } from "./services/calendar/scheduler/reminderScheduler.js";
+
 
 // Load environment variables
 dotenv.config();
@@ -70,6 +73,10 @@ app.use(spiritApp);
 
 // Mount Card Template Service
 app.use(cardTemplateApp);
+
+// Mount Calendar Service
+app.use(calendarApp);
+
 
 // =============================================
 // Health Check & Info
@@ -133,6 +140,9 @@ app.listen(PORT, () => {
   console.log("   ├── Order Service   → /api/orders  (orders_db)");
   console.log("   └── Product Service → /api/products (products_db)");
   console.log("==============================================\n");
+
+  // Start reminder scheduler
+  startReminderScheduler();
 });
 
 export default app;
