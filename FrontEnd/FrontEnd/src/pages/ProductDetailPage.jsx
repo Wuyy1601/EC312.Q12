@@ -204,7 +204,7 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            <div className="product-meta" style={{ marginBottom: '1.5rem', fontSize: '1rem' }}>
+            <div className="product-meta" style={{ marginBottom: '1rem', fontSize: '1rem' }}>
               <strong>Tình trạng: </strong>
               {isOutOfStock ? (
                 <span style={{ color: '#ef4444', fontWeight: 'bold' }}>Hết hàng</span>
@@ -213,7 +213,35 @@ const ProductDetailPage = () => {
               )}
             </div>
 
-            {/* Subscription Options (Cratejoy style) */}
+            {/* Story Section */}
+            {product.story && (
+              <div className="product-story" style={{
+                background: 'linear-gradient(135deg, #fef3f8 0%, #fff5f7 100%)',
+                padding: '1.25rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                borderLeft: '4px solid #ec407a'
+              }}>
+                <h3 style={{ 
+                  fontSize: '1rem', 
+                  color: '#ec407a', 
+                  marginBottom: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  📖 Câu chuyện phía sau sản phẩm
+                </h3>
+                <p style={{ 
+                  fontStyle: 'italic', 
+                  color: '#666',
+                  lineHeight: '1.6',
+                  margin: 0
+                }}>
+                  "{product.story}"
+                </p>
+              </div>
+            )}            {/* Subscription Options (Cratejoy style) */}
             <div className="subscription-options" style={{ marginBottom: '1.5rem', padding: '15px', border: '1px solid #e5e7eb', borderRadius: '12px', background: '#f9fafb' }}>
                <h3 style={{ fontSize: '1.1rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                  <i className="fa-solid fa-calendar-check" style={{ color: '#ec407a' }}></i> Tùy chọn mua hàng

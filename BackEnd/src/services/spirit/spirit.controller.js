@@ -383,102 +383,7 @@ const BUDGET_RANGES = {
   high: { min: 500000, max: 99999999 }
 };
 
-// Story templates for different scenarios
-const BUNDLE_STORIES = {
-  // By preference type
-  flowers: [
-    "Có bạn từng tặng bó hoa này cho mẹ nhân ngày 20/10. Mẹ bạn ấy cầm bó hoa, mắt rưng rưng nói 'Lớn rồi mà vẫn nhớ mẹ' 💕",
-    "Một cô gái từng nhận được bundle hoa này từ người yêu. Cô ấy kể, mỗi lần nhìn thấy hoa, lại nhớ cảm giác được yêu thương~",
-    "Bạn biết không, hoa tươi có thể làm cả một ngày tồi tệ trở nên tươi sáng. Đó là điều mình thấy ở những người nhận món quà này 🌸"
-  ],
-  skincare: [
-    "Mình từng giúp một bạn trai tặng set skincare cho người yêu. Ban đầu lo cô ấy không thích, kết quả là cô ấy dùng suốt và da đẹp hẳn lên! Giờ cứ ai hỏi là cô ấy khoe 'của anh tặng' 💕",
-    "Một khách từng nói với mình: 'Mẹ em cả đời chăm lo cho cả nhà, chưa bao giờ mua gì cho bản thân'. Set dưỡng da này như lời nhắn: Mẹ cũng xứng đáng được chăm sóc 🥹",
-    "Skincare là cách nói 'mình muốn bạn xinh đẹp và tự tin' mà không cần nói ra. Đó là message ẩn sau món quà này~"
-  ],
-  chocolate: [
-    "Socola + hoa = combo classic không bao giờ sai! Một bạn từng tặng combo này cho crush, và câu trả lời là... 'Em cũng thích anh' 😍",
-    "Có câu chuyện dễ thương lắm: một bạn tặng socola cho bà ngoại vì bà thích ăn ngọt. Bà chia cho cả xóm rồi khoe 'cháu tôi gửi từ thành phố về đấy!' 💝",
-    "Ngọt ngào như tình yêu vậy đó! Món quà này đã kết nối biết bao trái tim rồi~"
-  ],
-  teddy: [
-    "Bạn biết gấu bông có điều kỳ diệu gì không? Nó có thể ôm thay bạn khi bạn không ở bên. Một cô gái từng kể cô ôm gấu mỗi đêm vì nhớ người yêu đi xa 🧸",
-    "Có bạn tặng gấu bông kèm thiệp viết 'Khi nào buồn thì ôm em ấy nhé'. Người nhận giữ cả gấu lẫn thiệp đến tận bây giờ~",
-    "Không cần lý do đặc biệt để tặng gấu bông. Chỉ cần nói 'mình nhớ bạn' là đủ rồi 💕"
-  ],
-  wellness: [
-    "Self-care là yêu thương bản thân. Một người mẹ từng khóc khi nhận set spa này vì 'lâu lắm rồi không ai nghĩ đến việc mẹ cần được nghỉ ngơi' 🥹",
-    "Có bạn tặng set thư giãn cho đồng nghiệp stress quá. Sau đó người ta nói 'Cảm ơn, lâu rồi mới ngủ ngon vậy'. Đôi khi caring đơn giản vậy thôi~",
-    "Wellness không chỉ là sản phẩm, mà là message: 'Mình muốn bạn yêu thương bản thân hơn' 💆‍♀️"
-  ],
-  // By occasion
-  birthday: [
-    "Sinh nhật là ngày đặc biệt - ngày duy nhất trong năm thuộc về riêng họ. Bundle này sẽ làm ngày đó thêm đáng nhớ! 🎂",
-    "Một bạn từng order bundle này cho BFF. Tối sinh nhật, cả hai ngồi unbox và khóc vì hạnh phúc. Best birthday ever mà! 🎉",
-    "Mình tin rằng quà sinh nhật không cần đắt tiền, chỉ cần cho thấy bạn HIỂU người ấy. Đó là điều quý nhất~"
-  ],
-  valentine: [
-    "Valentine là nói 'yêu' bằng quà tặng. Có cặp từng chia tay vì Valentine không nhớ tặng gì... Nhưng cũng có cặp quay lại vì một món quà simple nhưng đầy ý nghĩa 💕",
-    "Mình từng thấy một bạn trai lo lắng tặng gì cho người yêu. Cuối cùng bundle này giúp bạn ấy, và tin nhắn sau đó là: 'Em thích lắm!' + 100 trái tim 😍",
-    "Tình yêu đôi khi cần được thể hiện. Đây là cách bạn nói 'em quan trọng với anh' mà không cần nhiều lời~"
-  ],
-  thanks: [
-    "Cảm ơn không cần lý do lớn lao. Một bạn tặng bundle này cho mẹ chỉ để nói 'Con yêu mẹ'. Mẹ bạn ấy cất giữ cả cái card cho đến giờ 🥹",
-    "Tri ân thầy cô bằng món quà thực sự ý nghĩa. Nhiều thầy cô nói với mình: 'Không cần đắt tiền, chỉ cần biết các em vẫn nhớ là vui rồi'~",
-    "Đôi khi một lời cảm ơn đi kèm món quà nhỏ có thể thay đổi cả một ngày của ai đó 💝"
-  ],
-  // Generic fallback
-  generic: [
-    "Mỗi món quà đều kể một câu chuyện. Và câu chuyện của bundle này sẽ được viết bởi cậu và người nhận~",
-    "Không có món quà hoàn hảo, chỉ có tấm lòng hoàn hảo. Mình tin người nhận sẽ cảm nhận được tình cảm của cậu 💕",
-    "Quà tặng là cách nói 'mình nghĩ về bạn' mà không cần mở lời. Đó là lý do nó đặc biệt~"
-  ]
-};
-
-// Generate story for a bundle based on context
-const generateBundleStory = (bundle, recipient, occasion, preferences) => {
-  const bundleText = `${bundle.name} ${bundle.description || ''}`.toLowerCase();
-  
-  // Try to match by preference
-  for (const pref of (preferences || '').split(',')) {
-    if (BUNDLE_STORIES[pref]) {
-      const stories = BUNDLE_STORIES[pref];
-      return stories[Math.floor(Math.random() * stories.length)];
-    }
-  }
-  
-  // Try to match by bundle content
-  if (bundleText.includes('hoa') || bundleText.includes('flower')) {
-    const stories = BUNDLE_STORIES.flowers;
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  if (bundleText.includes('skincare') || bundleText.includes('dưỡng') || bundleText.includes('kem')) {
-    const stories = BUNDLE_STORIES.skincare;
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  if (bundleText.includes('socola') || bundleText.includes('chocolate')) {
-    const stories = BUNDLE_STORIES.chocolate;
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  if (bundleText.includes('gấu') || bundleText.includes('teddy') || bundleText.includes('thú bông')) {
-    const stories = BUNDLE_STORIES.teddy;
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  if (bundleText.includes('spa') || bundleText.includes('thư giãn') || bundleText.includes('relax')) {
-    const stories = BUNDLE_STORIES.wellness;
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  
-  // Try to match by occasion
-  if (occasion && BUNDLE_STORIES[occasion]) {
-    const stories = BUNDLE_STORIES[occasion];
-    return stories[Math.floor(Math.random() * stories.length)];
-  }
-  
-  // Fallback to generic
-  const genericStories = BUNDLE_STORIES.generic;
-  return genericStories[Math.floor(Math.random() * genericStories.length)];
-};
+// Note: Stories now come from the database `story` field on each product/bundle
 
 // Get bundles recommended by a spirit - WITH SMART FILTERING
 export const getSpiritBundles = async (req, res) => {
@@ -611,13 +516,10 @@ export const getSpiritBundles = async (req, res) => {
     // Sort by score descending
     scoredBundles.sort((a, b) => b.score - a.score);
     
-    // Return top 6 bundles with stories
+    // Return top 6 bundles (stories come from database)
     const recommendedBundles = scoredBundles.slice(0, 6).map(item => {
       const bundleObj = item.bundle.toObject ? item.bundle.toObject() : item.bundle;
-      return {
-        ...bundleObj,
-        story: generateBundleStory(item.bundle, recipient, occasion, preferences)
-      };
+      return bundleObj;
     });
 
     console.log("🎯 Top bundle scores:", scoredBundles.slice(0, 6).map(s => ({ name: s.bundle.name, score: s.score.toFixed(1) })));

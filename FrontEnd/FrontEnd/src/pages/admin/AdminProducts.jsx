@@ -149,6 +149,7 @@ const AdminProducts = () => {
     formData.append("name", form.name.value);
     formData.append("price", form.price.value);
     formData.append("description", form.description.value);
+    formData.append("story", form.story?.value || "");
     formData.append("stock", form.stock?.value || 0);
     formData.append("isBundle", isBundle);
     
@@ -336,7 +337,15 @@ const AdminProducts = () => {
                 <textarea name="description" defaultValue={editingProduct?.description || ""} />
               </div>
 
-              {/* Category Selection */}
+              <div className="form-group">
+                <label>📖 Câu chuyện phía sau sản phẩm</label>
+                <textarea 
+                  name="story" 
+                  defaultValue={editingProduct?.story || ""} 
+                  placeholder="Kể một câu chuyện cảm động về sản phẩm này để thu hút khách hàng..."
+                  style={{ minHeight: '80px' }}
+                />
+              </div>              {/* Category Selection */}
               <div className="form-group">
                 <label>Danh mục</label>
                 {!isCreatingCategory ? (
