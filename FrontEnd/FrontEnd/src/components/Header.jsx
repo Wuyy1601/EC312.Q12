@@ -69,6 +69,7 @@ const Header = () => {
         <nav className="nav-menu">
           <Link to="/" className="nav-link">Trang chủ</Link>
           <Link to="/products" className="nav-link">Sản phẩm</Link>
+          <Link to="/spirit-consultant" className="nav-link spirit-link">✨ Tư Vấn Quà</Link>
           <Link to="/contact" className="nav-link">Liên hệ</Link>
         </nav>
 

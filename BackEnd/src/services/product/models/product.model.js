@@ -17,6 +17,13 @@ const productSchema = new mongoose.Schema(
     stock: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
     tags: [{ type: String }],
+    
+    // Spirit Association
+    spiritType: { 
+      type: String, 
+      enum: ['love', 'joy', 'care', 'gratitude', 'kindness', 'courage', 'peace', 'wisdom', 'magic', 'wonder', null],
+      default: null 
+    },
 
     // Bundle fields
     isBundle: { type: Boolean, default: false },

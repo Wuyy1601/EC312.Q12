@@ -30,6 +30,10 @@ const routers = [
     path: "/payment-result",
     component: lazy(() => import("@pages/PaymentResultPage")),
   },
+  {
+    path: "/spirit-consultant",
+    component: lazy(() => import("@pages/SpiritConsultant")),
+  },
 ];
 
 // Admin pages (separate routes, no Layout)

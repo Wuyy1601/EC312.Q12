@@ -15,7 +15,6 @@ export const generateGreeting = async (req, res) => {
     const { prompt, occasion, recipient, relationship } = req.body;
 
     if (!process.env.GEMINI_API_KEY) {
-      // Mock response if no key
       return res.json({
         success: true,
         text: `Chúc ${recipient} một ${occasion} thật vui vẻ và hạnh phúc! (Đây là tin nhắn mẫu do chưa có API Key)`,
@@ -40,7 +39,6 @@ export const generateGreeting = async (req, res) => {
     res.json({ success: true, text });
   } catch (error) {
     console.error("Gemini Error:", error);
-    // Fallback: Return a nice generic message without error suffix
     const fallbackMessages = [
       `Chúc ${req.body.recipient} một dịp ${req.body.occasion} thật vui vẻ, hạnh phúc và tràn đầy ý nghĩa!`,
       `Gửi ngàn lời chúc tốt đẹp nhất đến ${req.body.recipient} nhân ngày ${req.body.occasion}. Mong bạn luôn vui vẻ!`,
