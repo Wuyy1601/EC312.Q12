@@ -20,20 +20,55 @@ export const getAllProducts = async (req, res) => {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
 
-    let products;
-    if (search) {
-      products = await Product.find({ ...query, $text: { $search: search } })
-        .populate("bundleItems.product", "name price image")
-        .populate("category", "name slug");
-    } else {
-      products = await Product.find(query)
-        .populate("bundleItems.product", "name price image")
-        .populate("category", "name slug")
-        .sort({ createdAt: -1 });
+    // Execute query with populate
+    let productsQuery = Product.find(search ? { ...query, $text: { $search: search } } : query)
+      .populate("bundleItems.product", "name price image stock")
+      .populate("category", "name slug");
+
+    if (!search) {
+      productsQuery = productsQuery.sort({ createdAt: -1 });
     }
 
-    res.json({ success: true, count: products.length, data: products });
+    const products = await productsQuery.lean(); // Use lean to get plain JS objects
+
+    // Fetch ratings for these products
+    // Note: This is an extra query but necessary since Rating is not denormalized
+    // Optimization: In production, better to store rating in Product model
+    const productIds = products.map(p => p._id);
+    
+    // Aggregation to get average rating for each product
+    // Dynamic import to avoid circular dependency if any, or just assume Review is available
+    // We need to import Review at top
+    const Review = (await import("../../review/models/review.model.js")).default; 
+    
+    const ratings = await Review.aggregate([
+      { $match: { product: { $in: productIds } } },
+      { 
+        $group: { 
+          _id: "$product", 
+          avgRating: { $avg: "$rating" },
+          count: { $sum: 1 }
+        } 
+      }
+    ]);
+
+    // Create a map for fast lookup
+    const ratingMap = {};
+    ratings.forEach(r => {
+      ratingMap[r._id.toString()] = r.avgRating;
+    });
+
+    // Merge rating into products
+    const productsWithRating = products.map(p => ({
+      ...p,
+      rating: ratingMap[p._id.toString()] || 0, // Default to 0 if no reviews
+      // Ensure id string is available like .id virtual
+      id: p._id.toString() 
+    }));
+
+    res.json({ success: true, count: productsWithRating.length, data: productsWithRating });
   } catch (error) {
+    console.error("Get all products error:", error);
     res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
   }
 };
@@ -42,7 +77,7 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .populate("bundleItems.product", "name price image description")
+      .populate("bundleItems.product", "name price image description stock")
       .populate("category", "name slug");
     if (!product) return res.status(404).json({ success: false, message: "Không tìm thấy sản phẩm" });
     res.json({ success: true, data: product });
@@ -164,7 +199,7 @@ export const deleteProduct = async (req, res) => {
 export const getSingleProducts = async (req, res) => {
   try {
     const products = await Product.find({ isActive: true, isBundle: { $ne: true } })
-      .select("name price image")
+      .select("name price image stock")
       .sort({ name: 1 });
     res.json({ success: true, data: products });
   } catch (error) {

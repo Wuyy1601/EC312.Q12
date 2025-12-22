@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { FaHome, FaUsers, FaShoppingCart, FaBox, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaUsers, FaShoppingCart, FaBox, FaSignOutAlt, FaImages, FaIdCard } from "react-icons/fa";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
@@ -41,6 +41,9 @@ const AdminLayout = () => {
           </NavLink>
           <NavLink to="/admin/orders" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             <FaShoppingCart /> Đơn hàng
+          </NavLink>
+          <NavLink to="/admin/card-templates" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <FaIdCard /> 🎴 Template Thiệp
           </NavLink>
         </nav>
 

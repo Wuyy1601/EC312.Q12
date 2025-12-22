@@ -11,12 +11,28 @@ const routers = [
     component: lazy(() => import("@pages/CartPage")),
   },
   {
+    path: "/products",
+    component: lazy(() => import("@pages/ProductsPage")),
+  },
+  {
+    path: "/search",
+    component: lazy(() => import("@pages/ProductsPage")),
+  },
+  {
     path: "/checkout",
     component: lazy(() => import("@pages/CheckoutPage")),
   },
   {
+    path: "/product/:id",
+    component: lazy(() => import("@pages/ProductDetailPage")),
+  },
+  {
     path: "/payment-result",
     component: lazy(() => import("@pages/PaymentResultPage")),
+  },
+  {
+    path: "/spirit-consultant",
+    component: lazy(() => import("@pages/SpiritConsultant")),
   },
 ];
 
@@ -89,6 +105,14 @@ export const adminDashboardRoutes = [
   {
     path: "orders",
     component: lazy(() => import("@pages/admin/AdminOrders")),
+  },
+  {
+    path: "templates",
+    component: lazy(() => import("@pages/admin/AdminTemplates")),
+  },
+  {
+    path: "card-templates",
+    component: lazy(() => import("@pages/admin/AdminCardTemplates")),
   },
 ];
 

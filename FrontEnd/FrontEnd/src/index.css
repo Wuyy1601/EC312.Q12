@@ -1,10 +1,14 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color: #333;
-  background-color: #f5e6f0;
+  background-color: transparent; /* Allow Layout background to show */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;

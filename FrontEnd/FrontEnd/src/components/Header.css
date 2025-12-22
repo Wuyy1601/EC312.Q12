@@ -85,6 +85,32 @@
   width: 100%;
 }
 
+/* Spirit Consultant Link - Special Styling */
+.nav-link.spirit-link {
+  background: linear-gradient(135deg, #ec407a, #f48fb1);
+  color: white !important;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  box-shadow: 0 3px 15px rgba(236, 64, 122, 0.4);
+  transition: all 0.3s ease;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.nav-link.spirit-link::after {
+  display: none;
+}
+
+.nav-link.spirit-link:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 25px rgba(236, 64, 122, 0.5);
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 3px 15px rgba(236, 64, 122, 0.4); }
+  50% { box-shadow: 0 3px 25px rgba(236, 64, 122, 0.6); }
+}
+
 /* ========== RIGHT SIDE ========== */
 .header-right {
   display: flex;
@@ -120,7 +146,6 @@
   outline: none;
   border-color: #ffb6c1;
   box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
-  width: 250px;
 }
 
 .search-btn {
@@ -133,7 +158,7 @@
   border: none;
   border-radius: 50%;
   background: transparent;
-  color: #888;
+  color: #555;
   cursor: pointer;
   display: flex;
   align-items: center;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaMinus,
@@ -8,62 +8,38 @@ import {
   FaQrcode,
   FaMoneyBillWave,
 } from "react-icons/fa";
+import { useCart } from "../context/CartContext";
 import "./CartPage.css";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-    {
-      id: 2,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/D4A5C7/FFFFFF?text=Gift",
-    },
-    {
-      id: 3,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-    {
-      id: 4,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/D4A5C7/FFFFFF?text=Gift",
-    },
-    {
-      id: 5,
-      name: "Quà giáng sinh",
-      price: 1000,
-      quantity: 1,
-      image: "https://via.placeholder.com/80/E8B4D9/FFFFFF?text=Gift",
-    },
-  ]);
+  const { cartItems, updateQuantity, removeFromCart } = useCart();
+  
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  
+  // Auto select all on initial load
+  useEffect(() => {
+     if (cartItems.length > 0 && selectedItems.size === 0) {
+        setSelectedItems(new Set(cartItems.map(i => i.id)));
+     }
+  }, [cartItems.length]);
 
-  // State để track sản phẩm được chọn (mặc định chọn tất cả)
-  const [selectedItems, setSelectedItems] = useState(() => 
-    new Set([1, 2, 3, 4, 5])
-  );
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://via.placeholder.com/500";
+    if (imagePath.startsWith("http")) return imagePath;
+    const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${API_URL}${path}`;
+  };
 
   const [discountCode, setDiscountCode] = useState("");
   const [discount, setDiscount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("momo");
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN").format(price);
   };
 
-  // Toggle chọn/bỏ chọn sản phẩm
   const toggleSelectItem = (id) => {
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
@@ -76,7 +52,6 @@ const CartPage = () => {
     });
   };
 
-  // Chọn/bỏ chọn tất cả
   const toggleSelectAll = () => {
     if (selectedItems.size === cartItems.length) {
       setSelectedItems(new Set());
@@ -85,19 +60,8 @@ const CartPage = () => {
     }
   };
 
-  const updateQuantity = (id, change) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
-  };
-
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
-    // Cũng xóa khỏi selectedItems
+  const handleRemoveItem = (id) => {
+    removeFromCart(id);
     setSelectedItems((prev) => {
       const newSet = new Set(prev);
       newSet.delete(id);
@@ -163,11 +127,44 @@ const CartPage = () => {
                   <td>
                     <div className="product-cell">
                       <img
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         className="product-thumb"
                       />
                       <span className="product-name">{item.name}</span>
+                      
+                      {/* Customization Display */}
+                      {item.customization && (
+                        <div className="cart-customization" style={{ fontSize: '0.85rem', color: '#666', marginTop: '5px' }}>
+                          {item.customization.subscription === 'monthly' && (
+                             <div className="cart-sub-badge" style={{ color: '#ec407a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                               <i className="fa-solid fa-rotate-right"></i> Đăng ký định kỳ
+                             </div>
+                          )}
+                          
+                          {item.customization.message && (
+                            <div className="cart-msg" style={{ fontStyle: 'italic', marginTop: '2px' }}>
+                              " {item.customization.message} "
+                            </div>
+                          )}
+
+                          {item.customization.image && (
+                            <div className="cart-custom-img" style={{ marginTop: '4px' }}>
+                              <img 
+                                src={item.customization.image} 
+                                alt="Custom" 
+                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} 
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {item.isBundle && item.bundleDescription && (
+                        <div className="cart-bundle-desc">
+                          <small>Set gồm: {item.bundleDescription}</small>
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="price-cell">{formatPrice(item.price)}</td>
@@ -177,14 +174,14 @@ const CartPage = () => {
                         className="qty-btn"
                         onClick={() => updateQuantity(item.id, -1)}
                       >
-                        <FaMinus />
+                        <i className="fa-solid fa-minus" style={{ fontSize: "10px" }}></i>
                       </button>
                       <span className="qty-value">{item.quantity}</span>
                       <button
                         className="qty-btn"
                         onClick={() => updateQuantity(item.id, 1)}
                       >
-                        <FaPlus />
+                        <i className="fa-solid fa-plus" style={{ fontSize: "10px" }}></i>
                       </button>
                     </div>
                   </td>
@@ -194,9 +191,9 @@ const CartPage = () => {
                   <td>
                     <button
                       className="delete-btn"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => handleRemoveItem(item.id)}
                     >
-                      <FaTrash />
+                      <i className="fa-solid fa-trash"></i>
                     </button>
                   </td>
                 </tr>
@@ -250,97 +247,7 @@ const CartPage = () => {
               <span className="total-value">{formatPrice(total)} VNĐ</span>
             </div>
 
-            <div className="payment-methods">
-              <p className="payment-title">Phương thức thanh toán:</p>
-              <div className="payment-options">
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "momo" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="momo"
-                    checked={paymentMethod === "momo"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon momo-icon">
-                    <span>MOMO</span>
-                  </div>
-                </label>
 
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "visa" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="visa"
-                    checked={paymentMethod === "visa"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon visa-icon">
-                    <FaCcVisa />
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "vnpay" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="vnpay"
-                    checked={paymentMethod === "vnpay"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon vnpay-icon">
-                    <span>VNPAY</span>
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "bank" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="bank"
-                    checked={paymentMethod === "bank"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon bank-icon">
-                    <FaQrcode />
-                    <span>QR Bank</span>
-                  </div>
-                </label>
-
-                <label
-                  className={`payment-option ${
-                    paymentMethod === "cod" ? "active" : ""
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="cod"
-                    checked={paymentMethod === "cod"}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                  <div className="payment-icon cod-icon">
-                    <FaMoneyBillWave />
-                    <span>Thanh toán khi nhận hàng</span>
-                  </div>
-                </label>
-              </div>
-            </div>
 
             <button
               className="checkout-btn"
@@ -350,7 +257,7 @@ const CartPage = () => {
                   selectedItems.has(item.id)
                 );
                 localStorage.setItem("cartItems", JSON.stringify(itemsToCheckout));
-                localStorage.setItem("paymentMethod", paymentMethod);
+
                 localStorage.setItem("discountCode", discountCode);
                 localStorage.setItem(
                   "discountAmount",

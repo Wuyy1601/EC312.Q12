@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173", credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 app.use("/api/orders", orderRoutes);
 app.get("/health", (req, res) => res.json({ service: "order", status: "ok" }));

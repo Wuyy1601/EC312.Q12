@@ -23,6 +23,21 @@ const AdminProducts = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  
+  // Spirit state
+  const [selectedSpirit, setSelectedSpirit] = useState("");
+  const spirits = [
+    { id: 'love', name: 'Tình Yêu' },
+    { id: 'joy', name: 'Niềm Vui' },
+    { id: 'care', name: 'Quan Tâm' },
+    { id: 'gratitude', name: 'Biết Ơn' },
+    { id: 'kindness', name: 'Tử Tế' },
+    { id: 'courage', name: 'Dũng Cảm' },
+    { id: 'peace', name: 'Bình Yên' },
+    { id: 'wisdom', name: 'Trí Tuệ' },
+    { id: 'magic', name: 'Phép Màu' },
+    { id: 'wonder', name: 'Kỳ Diệu' }
+  ];
 
   useEffect(() => {
     fetchProducts();
@@ -144,8 +159,14 @@ const AdminProducts = () => {
       formData.append("categoryName", cat?.name || "");
     }
 
-    if (isBundle && bundleItems.length > 0) {
-      formData.append("bundleItems", JSON.stringify(bundleItems.filter((item) => item.product)));
+    if (isBundle) {
+      // Append spirit type if bundle
+      if (selectedSpirit) {
+        formData.append("spiritType", selectedSpirit);
+      }
+      if (bundleItems.length > 0) {
+        formData.append("bundleItems", JSON.stringify(bundleItems.filter((item) => item.product)));
+      }
     }
 
     selectedFiles.forEach((file) => formData.append("images", file));
@@ -177,6 +198,7 @@ const AdminProducts = () => {
     setSelectedCategory("");
     setIsCreatingCategory(false);
     setNewCategoryName("");
+    setSelectedSpirit("");
   };
 
   const handleOpenEdit = (product) => {
@@ -186,6 +208,7 @@ const AdminProducts = () => {
     setPreviewUrls(product.images?.map((img) => `${API_URL}${img}`) || []);
     // Set category - handle both ObjectId and string
     setSelectedCategory(product.category?._id || product.category || "");
+    setSelectedSpirit(product.spiritType || "");
   };
 
   const handleOpenCreate = () => {
@@ -193,6 +216,7 @@ const AdminProducts = () => {
     setIsBundle(false);
     setBundleItems([]);
     setSelectedCategory("");
+    setSelectedSpirit("");
   };
 
   const formatPrice = (price) => new Intl.NumberFormat("vi-VN").format(price) + "đ";
@@ -235,6 +259,25 @@ const AdminProducts = () => {
             {product.images?.length > 1 && <span className="image-count">+{product.images.length - 1}</span>}
             <div className="product-info">
               <h3>{product.name}</h3>
+              <div className="stock-info" style={{ fontSize: '0.9rem', color: '#666', marginBottom: '5px' }}>
+                <strong>Kho:</strong> {product.isBundle ? (
+                  <span title="Tính dựa trên sản phẩm con">{(() => {
+                    if (!product.bundleItems || product.bundleItems.length === 0) return 0;
+                    const stocks = product.bundleItems.map(item => {
+                      // Prioritize populated stock
+                      if (item.product && typeof item.product === 'object' && item.product.stock !== undefined) {
+                        return Math.floor(item.product.stock / item.quantity);
+                      }
+                      const subId = item.product?._id || item.product;
+                      const sub = singleProducts.find(p => p._id === subId) || products.find(p => p._id === subId);
+                      return sub ? Math.floor((sub.stock || 0) / item.quantity) : 0;
+                    });
+                    return Math.min(...stocks);
+                  })()} (Combo)</span>
+                ) : (
+                  <span>{product.stock || 0}</span>
+                )}
+              </div>
               <p className="price">{formatPrice(product.price)}</p>
               {product.isBundle && product.savings > 0 && (
                 <p className="savings">Tiết kiệm {formatPrice(product.savings)}</p>
@@ -280,7 +323,11 @@ const AdminProducts = () => {
                 </div>
                 <div className="form-group">
                   <label>Số lượng</label>
-                  <input name="stock" type="number" defaultValue={editingProduct?.stock || 0} />
+                  {isBundle ? (
+                     <input type="text" value="Tự động tính theo SP con" disabled style={{ background: '#f5f5f5', color: '#666' }} />
+                  ) : (
+                     <input name="stock" type="number" defaultValue={editingProduct?.stock || 0} />
+                  )}
                 </div>
               </div>
 
@@ -336,7 +383,29 @@ const AdminProducts = () => {
               {/* Bundle Items */}
               {isBundle && (
                 <div className="bundle-section">
-                  <h3>🎁 Sản phẩm trong hộp</h3>
+                  <h3>🎁 Cấu hình Hộp Quà</h3>
+                  
+                  {/* Spirit Selection */}
+                  <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                    <label>✨ Tinh Linh Đại Diện (Chọn 1 để AI gợi ý)</label>
+                    <select 
+                      value={selectedSpirit}
+                      onChange={(e) => setSelectedSpirit(e.target.value)}
+                      style={{ border: '2px solid #ec407a', background: '#fff5f8' }}
+                    >
+                      <option value="">-- Chọn Tinh Linh --</option>
+                      {spirits.map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name} ({s.id})
+                        </option>
+                      ))}
+                    </select>
+                    <small style={{ display: 'block', marginTop: '5px', color: '#ec407a' }}>
+                      * Chọn tinh linh để bundle này xuất hiện khi khách hàng chat với tinh linh đó
+                    </small>
+                  </div>
+
+                  <h4>Sản phẩm trong hộp</h4>
                   {bundleItems.map((item, index) => (
                     <div key={index} className="bundle-item">
                       <select

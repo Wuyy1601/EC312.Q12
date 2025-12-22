@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
+import { useCart } from "../context/CartContext";
 import "./Header.css";
 
 // Random avatar nếu user không có
@@ -53,8 +54,8 @@ const Header = () => {
   };
 
   // Cart count
-  const cartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
-  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+  // Cart count
+  const { cartCount } = useCart();
 
   return (
     <header className="header">
@@ -68,6 +69,7 @@ const Header = () => {
         <nav className="nav-menu">
           <Link to="/" className="nav-link">Trang chủ</Link>
           <Link to="/products" className="nav-link">Sản phẩm</Link>
+          <Link to="/spirit-consultant" className="nav-link spirit-link">✨ Tư Vấn Quà</Link>
           <Link to="/contact" className="nav-link">Liên hệ</Link>
         </nav>
 
@@ -83,13 +85,13 @@ const Header = () => {
               className="search-input"
             />
             <button type="submit" className="search-btn">
-              <FaSearch />
+              <i className="fa-solid fa-magnifying-glass"></i>
             </button>
           </form>
 
           {/* Cart */}
           <Link to="/cart" className="cart-link">
-            <FaShoppingCart className="cart-icon" />
+            <FaShoppingCart className="cart-icon" size={24} color="#333" />
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
 
