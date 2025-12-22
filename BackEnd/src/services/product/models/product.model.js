@@ -5,6 +5,7 @@ const productSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     description: { type: String },
+    story: { type: String, default: '' }, // Câu chuyện phía sau sản phẩm
     price: { type: Number, required: true },
     category: { 
       type: mongoose.Schema.Types.ObjectId, 
