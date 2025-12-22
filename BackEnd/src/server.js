@@ -13,6 +13,7 @@ import reviewRoutes from "./services/review/routes/review.routes.js";
 import geminiApp from "./services/gemini/index.js";
 import templateApp from "./services/template/index.js";
 import spiritApp from "./services/spirit/index.js";
+import cardTemplateApp from "./services/cardTemplate/index.js";
 
 // Load environment variables
 dotenv.config();
@@ -66,6 +67,9 @@ app.use(templateApp);
 
 // Mount Spirit Service
 app.use(spiritApp);
+
+// Mount Card Template Service
+app.use(cardTemplateApp);
 
 // =============================================
 // Health Check & Info

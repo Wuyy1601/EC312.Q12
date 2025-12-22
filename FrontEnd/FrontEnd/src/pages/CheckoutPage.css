@@ -474,3 +474,143 @@
   height: auto;
   min-height: 80px;
 }
+
+/* =========================================
+   3D CARD EDITOR STYLES
+   ========================================= */
+.threed-card-editor-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85); /* Dark cinematic backdrop */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.threed-card-container {
+  width: 90%;
+  max-width: 1000px;
+  height: 80vh;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  background: black; /* Or dark grey */
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(236, 64, 122, 0.2);
+  position: relative;
+}
+
+.close-card-btn {
+  position: absolute;
+  top: 20px; right: 20px;
+  background: white;
+  color: #333;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 100;
+  display: flex; /* Center icon */
+  align-items: center;
+  justify-content: center;
+}
+
+.card-preview-area {
+  background: radial-gradient(circle at center, #2b2b2b 0%, #1a1a1a 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-hint {
+  color: rgba(255,255,255,0.5);
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.card-controls {
+  background: #fff;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.card-controls h3 {
+  font-family: 'Playfair Display', serif;
+  color: #880e4f;
+  margin-bottom: 0.5rem;
+}
+
+.control-group label {
+  display: block;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.control-group input, 
+.control-group textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-family: inherit;
+  background: #f9f9f9;
+}
+
+.control-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.color-options {
+  display: flex;
+  gap: 10px;
+}
+
+.color-dot {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s;
+}
+
+.color-dot.active {
+  border-color: #333;
+  transform: scale(1.1);
+}
+
+.save-card-btn {
+  margin-top: auto;
+  padding: 1rem;
+  background: #ec407a;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(236, 64, 122, 0.3);
+}
+
+.save-card-btn:hover {
+  background: #d81b60;
+}
+
+@media (max-width: 900px) {
+  .threed-card-container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    height: 90vh;
+  }
+}

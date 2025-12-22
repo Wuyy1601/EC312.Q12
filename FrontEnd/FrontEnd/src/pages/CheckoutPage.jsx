@@ -5,20 +5,67 @@ import {
   FaCopy,
   FaCheckCircle,
   FaSpinner,
-  FaCheck
+  FaCheck,
+  FaTimes
 } from "react-icons/fa";
 import GreetingCardModal from "../components/GreetingCardModal";
+import ThreeDCard from "../components/ThreeDCard"; // Vanilla Three.js version
 import { useCart } from "../context/CartContext";
 import "./CheckoutPage.css";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
+const CATEGORIES = [
+  { id: 'love', name: 'Tình yêu', emoji: '❤️' },
+  { id: 'birthday', name: 'Sinh nhật', emoji: '🎂' },
+  { id: 'holiday', name: 'Lễ hội', emoji: '🎉' },
+  { id: 'thanks', name: 'Cảm ơn', emoji: '🙏' },
+  { id: 'congrats', name: 'Chúc mừng', emoji: '🎊' },
+  { id: 'wedding', name: 'Đám cưới', emoji: '💒' },
+  { id: 'newyear', name: 'Năm mới', emoji: '🎆' },
+  { id: 'other', name: 'Khác', emoji: '✨' }
+];
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cartItems, removeFromCart, clearCart } = useCart();
   const [isCardModalOpen, setIsCardModalOpen] = useState(false);
 
-  // Removed local cartItems state to use Context source of truth
+  // Template State
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [templateCategory, setTemplateCategory] = useState('');
 
-  // State
+  // 3D Card State
+  const [show3DCard, setShow3DCard] = useState(false);
+  const [cardConfig, setCardConfig] = useState({
+    message: "",
+    sender: "Bạn",
+    recipient: "Người thương",
+    coverColor: "#ffcdc9",
+    coverImage: null
+  });
+
+  // Fetch templates
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const url = templateCategory 
+          ? `${API_URL}/api/card-templates?category=${templateCategory}`
+          : `${API_URL}/api/card-templates`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success) {
+          setTemplates(data.templates);
+        }
+      } catch (err) {
+        console.error('Error fetching templates:', err);
+      }
+    };
+    fetchTemplates();
+  }, [templateCategory]);
+
+  // State initialization
   const [customerInfo, setCustomerInfo] = useState({
     fullName: "",
     email: "",
@@ -234,12 +281,183 @@ const CheckoutPage = () => {
           <div className="gift-prompt-row">
             <div className="prompt-left">
               <span className="sparkle-icon">✨</span>
-              <span>Bạn có muốn tạo một tấm thiệp cho món quà này không?</span>
+              <span>Bạn có muốn tạo một tấm thiệp 3D cho món quà này không?</span>
             </div>
-            <button className="create-card-btn" onClick={() => setIsCardModalOpen(true)}>
-              {giftMessage.enabled ? "XEM LẠI THIỆP" : "TẠO THIỆP (+20k)"}
+            <button className="create-card-btn" onClick={() => setShow3DCard(true)}>
+              {giftMessage.enabled ? "XEM THIỆP 3D" : "TẠO THIỆP 3D (+20k)"}
             </button>
           </div>
+
+          {/* 3D CARD EDITOR */}
+          {show3DCard && (
+            <div className="threed-card-editor-overlay">
+              <div className="threed-card-container">
+                <button className="close-card-btn" onClick={() => setShow3DCard(false)}>
+                  <FaTimes />
+                </button>
+                
+                <div className="card-preview-area">
+                   <ThreeDCard 
+                      message={cardConfig.message} 
+                      sender={cardConfig.sender} 
+                      recipient={cardConfig.recipient}
+                      coverColor={cardConfig.coverColor}
+                      coverImage={cardConfig.coverImage}
+                   />
+                   <p className="preview-hint">Di chuột hoặc nhấn để mở thiệp</p>
+                </div>
+
+                <div className="card-controls">
+                   <h3>✨ Thiết kế thiệp 3D</h3>
+                   
+                   {/* Template Selection */}
+                   <div className="control-group">
+                      <label>📋 Chọn mẫu thiệp:</label>
+                      <select 
+                        value={templateCategory}
+                        onChange={(e) => setTemplateCategory(e.target.value)}
+                        style={{ marginBottom: '10px' }}
+                      >
+                        <option value="">Tất cả mẫu</option>
+                        {CATEGORIES.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.emoji} {cat.name}</option>
+                        ))}
+                      </select>
+                      
+                      <div className="template-gallery" style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: 'repeat(3, 1fr)', 
+                        gap: '8px',
+                        maxHeight: '200px',
+                        overflowY: 'auto',
+                        marginBottom: '10px'
+                      }}>
+                        {templates.map(tpl => (
+                          <div 
+                            key={tpl._id}
+                            onClick={() => {
+                              setSelectedTemplate(tpl);
+                              setCardConfig({
+                                ...cardConfig,
+                                coverColor: tpl.coverColor,
+                                coverImage: tpl.coverImage?.startsWith('http') ? tpl.coverImage : `${API_URL}${tpl.coverImage}`,
+                                message: cardConfig.message || tpl.defaultMessage
+                              });
+                            }}
+                            style={{
+                              border: selectedTemplate?._id === tpl._id ? '3px solid #ec407a' : '2px solid #ddd',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              cursor: 'pointer',
+                              position: 'relative'
+                            }}
+                          >
+                            <img 
+                              src={tpl.coverImage?.startsWith('http') ? tpl.coverImage : `${API_URL}${tpl.coverImage}`}
+                              alt={tpl.name}
+                              style={{ width: '100%', height: '60px', objectFit: 'cover' }}
+                              onError={(e) => {
+                                e.target.src = `https://placehold.co/100x60/${tpl.coverColor?.replace('#','')}/ffffff?text=${tpl.name?.charAt(0)}`;
+                              }}
+                            />
+                            {tpl.isFeatured && (
+                              <span style={{ 
+                                position: 'absolute', 
+                                top: '2px', 
+                                right: '2px', 
+                                fontSize: '10px',
+                                background: '#ffc107',
+                                borderRadius: '4px',
+                                padding: '1px 3px'
+                              }}>⭐</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                   </div>
+
+                   <div className="control-group">
+                      <label>Người nhận:</label>
+                      <input 
+                        type="text" 
+                        value={cardConfig.recipient} 
+                        onChange={e => setCardConfig({...cardConfig, recipient: e.target.value})}
+                        placeholder="VD: Mẹ yêu, Lan..."
+                      />
+                   </div>
+
+                   <div className="control-group">
+                      <label>Lời chúc:</label>
+                      <textarea 
+                        value={cardConfig.message} 
+                        onChange={e => setCardConfig({...cardConfig, message: e.target.value})}
+                        placeholder="Nhập lời chúc..."
+                      />
+                   </div>
+                   
+                   <div className="control-group">
+                      <label>Màu bìa (hoặc chọn template ở trên):</label>
+                      <div className="color-options">
+                         {['#ffcdc9', '#aed9e0', '#f7d794', '#d1ccc0', '#ec407a'].map(c => (
+                            <div 
+                              key={c} 
+                              className={`color-dot ${cardConfig.coverColor === c ? 'active' : ''}`}
+                              style={{ backgroundColor: c }}
+                              onClick={() => setCardConfig({...cardConfig, coverColor: c, coverImage: null})}
+                            />
+                         ))}
+                      </div>
+                   </div>
+
+                   <div className="control-group">
+                      <label>Người gửi:</label>
+                      <input 
+                        type="text" 
+                        value={cardConfig.sender} 
+                        onChange={e => setCardConfig({...cardConfig, sender: e.target.value})}
+                        placeholder="Tên của bạn..."
+                      />
+                   </div>
+
+                   <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
+                     <button 
+                       type="button"
+                       className="cancel-card-btn" 
+                       onClick={() => setShow3DCard(false)}
+                       style={{
+                         flex: 1,
+                         padding: '1rem',
+                         background: '#f0f0f0',
+                         color: '#666',
+                         border: 'none',
+                         borderRadius: '12px',
+                         fontWeight: 'bold',
+                         cursor: 'pointer'
+                       }}
+                     >
+                       Hủy
+                     </button>
+                     <button 
+                       className="save-card-btn" 
+                       onClick={() => {
+                         setGiftMessage({
+                           enabled: true,
+                           message: cardConfig.message,
+                           design: '3d-custom',
+                           meta: cardConfig
+                         });
+                         setShow3DCard(false);
+                       }}
+                       style={{ flex: 2 }}
+                     >
+                       ❤️ HOÀN TẤT (+20.000đ)
+                     </button>
+                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
 
           {/* SHIPPING METHOD */}
           <div className="section-block">

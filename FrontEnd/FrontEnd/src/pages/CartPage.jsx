@@ -132,6 +132,34 @@ const CartPage = () => {
                         className="product-thumb"
                       />
                       <span className="product-name">{item.name}</span>
+                      
+                      {/* Customization Display */}
+                      {item.customization && (
+                        <div className="cart-customization" style={{ fontSize: '0.85rem', color: '#666', marginTop: '5px' }}>
+                          {item.customization.subscription === 'monthly' && (
+                             <div className="cart-sub-badge" style={{ color: '#ec407a', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                               <i className="fa-solid fa-rotate-right"></i> Đăng ký định kỳ
+                             </div>
+                          )}
+                          
+                          {item.customization.message && (
+                            <div className="cart-msg" style={{ fontStyle: 'italic', marginTop: '2px' }}>
+                              " {item.customization.message} "
+                            </div>
+                          )}
+
+                          {item.customization.image && (
+                            <div className="cart-custom-img" style={{ marginTop: '4px' }}>
+                              <img 
+                                src={item.customization.image} 
+                                alt="Custom" 
+                                style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }} 
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {item.isBundle && item.bundleDescription && (
                         <div className="cart-bundle-desc">
                           <small>Set gồm: {item.bundleDescription}</small>

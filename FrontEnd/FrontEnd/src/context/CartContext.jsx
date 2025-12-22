@@ -69,20 +69,27 @@ export const CartProvider = ({ children }) => {
     window.dispatchEvent(new Event("storage"));
   };
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity = 1, customization = null) => {
     const currentCart = [...cartItems];
     
-    const existingItemIndex = product.isBundle 
+    // Create a unique ID for the cart item based on product ID and customization
+    // If customization exists, we treat it as a unique item always (simplification)
+    const isCustomized = customization && (customization.message || customization.image || customization.subscription !== 'once');
+    
+    const existingItemIndex = (product.isBundle || isCustomized)
       ? -1 
-      : currentCart.findIndex((item) => item._id === product._id || item.id === product.id);
+      : currentCart.findIndex((item) => (item._id === product._id || item.id === product.id) && !item.customization);
 
     if (existingItemIndex > -1) {
-      currentCart[existingItemIndex].quantity += 1;
+      currentCart[existingItemIndex].quantity += quantity;
     } else {
       currentCart.push({
         ...product,
-        id: product._id || product.id,
-        quantity: 1,
+        id: product._id || product.id, // Ensure consistent ID
+        quantity: quantity,
+        customization: customization || null,
+        // If subscription is monthly, we might want to tag it for checkout logic
+        isSubscription: customization?.subscription === 'monthly'
       });
     }
     saveCart(currentCart);

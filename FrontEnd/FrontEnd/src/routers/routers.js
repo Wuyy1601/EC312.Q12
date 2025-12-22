@@ -110,6 +110,10 @@ export const adminDashboardRoutes = [
     path: "templates",
     component: lazy(() => import("@pages/admin/AdminTemplates")),
   },
+  {
+    path: "card-templates",
+    component: lazy(() => import("@pages/admin/AdminCardTemplates")),
+  },
 ];
 
 export default routers;

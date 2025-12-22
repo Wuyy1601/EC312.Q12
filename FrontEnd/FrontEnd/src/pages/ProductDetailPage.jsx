@@ -20,6 +20,49 @@ const ProductDetailPage = () => {
   // Image Carousel State
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  // Subscription State
+  const [subscriptionMode, setSubscriptionMode] = useState('once'); // 'once' or 'monthly'
+
+  // ... (existing code)
+
+  const handleBundleAddToCart = (bundleProduct) => {
+    addToCart(bundleProduct, 1, {
+      subscription: subscriptionMode
+    });
+    setIsBundleModalOpen(false);
+  };
+
+  const handleAddToCartClick = () => {
+    if (product.isBundle && product.bundleItems?.length > 0) {
+      setIsBundleModalOpen(true);
+    } else {
+      addToCart(product, 1, {
+        message: customMessage,
+        image: customImageBase64,
+        imageName: customImageName,
+        subscription: subscriptionMode
+      });
+    }
+  };
+
+  const handleBuyNowClick = () => {
+    if (product.isBundle && product.bundleItems?.length > 0) {
+      setIsBundleModalOpen(true);
+    } else {
+      addToCart(product, 1, {
+        message: customMessage,
+        image: customImageBase64,
+        imageName: customImageName,
+        subscription: subscriptionMode
+      });
+      navigate("/cart");
+    }
+  };
+ 
+  // ... (render return)
+
+
+
   // Initialize allImages
   // Combine main product images (if any) and bundle item images
   const allImages = React.useMemo(() => {
@@ -87,22 +130,7 @@ const ProductDetailPage = () => {
     return `${API_URL}${path}`;
   };
 
-  const handleAddToCartClick = () => {
-    if (product.isBundle && product.bundleItems?.length > 0) {
-      setIsBundleModalOpen(true);
-    } else {
-      addToCart(product);
-    }
-  };
 
-  const handleBuyNowClick = () => {
-    if (product.isBundle && product.bundleItems?.length > 0) {
-      setIsBundleModalOpen(true);
-    } else {
-      addToCart(product);
-      navigate("/cart");
-    }
-  };
 
 
 
@@ -185,6 +213,38 @@ const ProductDetailPage = () => {
               )}
             </div>
 
+            {/* Subscription Options (Cratejoy style) */}
+            <div className="subscription-options" style={{ marginBottom: '1.5rem', padding: '15px', border: '1px solid #e5e7eb', borderRadius: '12px', background: '#f9fafb' }}>
+               <h3 style={{ fontSize: '1.1rem', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <i className="fa-solid fa-calendar-check" style={{ color: '#ec407a' }}></i> Tùy chọn mua hàng
+               </h3>
+               
+               <label className="sub-option" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', cursor: 'pointer' }}>
+                 <input 
+                   type="radio" 
+                   name="subscription" 
+                   checked={subscriptionMode === 'once'} 
+                   onChange={() => setSubscriptionMode('once')}
+                 />
+                 <span style={{ fontWeight: subscriptionMode === 'once' ? '600' : '400' }}>Mua 1 lần</span>
+               </label>
+               
+               <label className="sub-option" style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px', cursor: 'pointer' }}>
+                 <input 
+                   type="radio" 
+                   name="subscription" 
+                   checked={subscriptionMode === 'monthly'} 
+                   onChange={() => setSubscriptionMode('monthly')}
+                 />
+                 <div>
+                   <span style={{ fontWeight: subscriptionMode === 'monthly' ? '600' : '400', display: 'block' }}>Đăng ký định kỳ (Mỗi tháng)</span>
+                   <span style={{ fontSize: '0.85rem', color: '#ec407a', fontWeight: 'bold' }}>Tiết kiệm 10% + Freeship</span>
+                 </div>
+               </label>
+            </div>
+
+
+
             <div className="actions" style={{ display: 'flex', gap: '1rem' }}>
               <button 
                 className="add-to-cart-btn" 
@@ -221,7 +281,7 @@ const ProductDetailPage = () => {
                    fontSize: '1rem'
                 }}
               >
-                {isOutOfStock ? "HẾT HÀNG" : "MUA NGAY"}
+                {subscriptionMode === 'monthly' ? "ĐĂNG KÝ NGAY" : (isOutOfStock ? "HẾT HÀNG" : "MUA NGAY")}
               </button>
             </div>
 
@@ -255,7 +315,7 @@ const ProductDetailPage = () => {
           product={product} 
           isOpen={isBundleModalOpen} 
           onClose={() => setIsBundleModalOpen(false)}
-          onAddToCart={addToCart}
+          onAddToCart={handleBundleAddToCart}
         />
       </div>
     </div>
