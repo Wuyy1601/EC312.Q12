@@ -8,34 +8,157 @@
   padding: 0 2rem;
 }
 
-/* Banner Section */
-.banner-section {
+/* Hero Banner Section - Product Slider */
+.hero-banner-section {
   margin-bottom: 2rem;
+  padding: 1rem 2rem;
 }
 
-.banner-container {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  padding: 2rem;
-}
-
-.banner-item {
-  border-radius: 12px;
+.hero-banner {
+  position: relative;
+  background: linear-gradient(135deg, #fef3f8 0%, #f3e8ff 50%, #e8f4ff 100%);
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 8px 32px rgba(139, 21, 56, 0.15);
 }
 
-.banner-item:hover {
-  transform: translateY(-5px);
+.banner-content {
+  display: flex;
+  align-items: center;
+  padding: 2rem 4rem;
+  text-decoration: none;
+  color: inherit;
+  min-height: 350px;
+  gap: 3rem;
 }
 
-.banner-item img {
+.banner-image-wrapper {
+  flex: 0 0 45%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner-main-image {
   width: 100%;
+  max-width: 400px;
   height: 300px;
   object-fit: cover;
-  display: block;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s ease;
+}
+
+.banner-content:hover .banner-main-image {
+  transform: scale(1.03);
+}
+
+.banner-info {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.banner-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #ec407a, #f48fb1);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.banner-title {
+  font-size: 2rem;
+  color: #8b1538;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.banner-desc {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.banner-price {
+  font-size: 1.5rem;
+  color: #d97706;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.banner-cta {
+  display: inline-block;
+  color: #8b1538;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: transform 0.3s;
+}
+
+.banner-content:hover .banner-cta {
+  transform: translateX(10px);
+}
+
+.banner-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 10;
+  font-size: 1.2rem;
+  color: #8b1538;
+}
+
+.banner-nav-btn:hover {
+  background: #8b1538;
+  color: white;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.banner-nav-btn.prev {
+  left: 1rem;
+}
+
+.banner-nav-btn.next {
+  right: 1rem;
+}
+
+.banner-dots {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.banner-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(139, 21, 56, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.banner-dots .dot.active {
+  background: #8b1538;
+  width: 30px;
+  border-radius: 5px;
 }
 
 /* Categories Section */
@@ -176,8 +299,13 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .banner-container {
-    grid-template-columns: repeat(2, 1fr);
+  .banner-content {
+    padding: 1.5rem 3rem;
+    gap: 2rem;
+  }
+
+  .banner-title {
+    font-size: 1.6rem;
   }
 
   .products-grid {
@@ -191,13 +319,38 @@
     padding: 0 1rem;
   }
 
-  .banner-container {
-    grid-template-columns: 1fr;
+  .hero-banner-section {
     padding: 1rem;
   }
 
-  .banner-item img {
-    height: 200px;
+  .banner-content {
+    flex-direction: column;
+    padding: 1.5rem;
+    min-height: auto;
+    gap: 1.5rem;
+  }
+
+  .banner-image-wrapper {
+    flex: none;
+    width: 100%;
+  }
+
+  .banner-main-image {
+    max-width: 100%;
+    height: 220px;
+  }
+
+  .banner-info {
+    text-align: center;
+  }
+
+  .banner-title {
+    font-size: 1.4rem;
+  }
+
+  .banner-nav-btn {
+    width: 40px;
+    height: 40px;
   }
 
   .categories-grid {
@@ -229,6 +382,20 @@
 }
 
 @media (max-width: 480px) {
+  .banner-nav-btn {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+
+  .banner-title {
+    font-size: 1.2rem;
+  }
+
+  .banner-price {
+    font-size: 1.2rem;
+  }
+
   .products-grid {
     grid-template-columns: repeat(2, 1fr);
   }

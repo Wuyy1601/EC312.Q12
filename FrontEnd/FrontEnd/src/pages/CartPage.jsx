@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaMinus,
-  FaPlus,
-  FaTrash,
-  FaCcVisa,
-  FaQrcode,
-  FaMoneyBillWave,
-} from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import "./CartPage.css";
 

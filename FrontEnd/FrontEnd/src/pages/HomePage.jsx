@@ -1,79 +1,51 @@
 import React, { useRef, useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ProductCard from "@components/ProductCard";
 import BundleModal from "@components/BundleModal";
 import { useCart } from "../context/CartContext";
 import "./HomePage.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
 const HomePage = () => {
+  const navigate = useNavigate();
   const newArrivalsRef = useRef(null);
   const featuredRef = useRef(null);
   const { addToCart } = useCart();
 
-  // Countdown timer state
+  // Countdown timer - counts to end of day (midnight)
   const [timeLeft, setTimeLeft] = useState({
-    hours: 23,
-    minutes: 59,
-    seconds: 59,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
   });
 
   useEffect(() => {
+    const calculateTimeToMidnight = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // Set to next midnight
+      
+      const diff = midnight - now;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      
+      return { hours, minutes, seconds };
+    };
+
+    setTimeLeft(calculateTimeToMidnight());
+    
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        let { hours, minutes, seconds } = prev;
-
-        if (seconds > 0) {
-          seconds--;
-        } else {
-          seconds = 59;
-          if (minutes > 0) {
-            minutes--;
-          } else {
-            minutes = 59;
-            if (hours > 0) {
-              hours--;
-            } else {
-              // Reset to 24 hours when countdown ends
-              hours = 23;
-              minutes = 59;
-              seconds = 59;
-            }
-          }
-        }
-
-        return { hours, minutes, seconds };
-      });
+      setTimeLeft(calculateTimeToMidnight());
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
 
-
-
-
-
-  // Sample data for banner
-  const bannerImages = [
-    {
-      id: 1,
-      image: "https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=800&q=80",
-      alt: "Winter Gift Collection",
-    },
-    {
-      id: 2,
-      image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=800&q=80",
-      alt: "New Arrivals",
-    },
-    {
-      id: 3,
-      image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=800&q=80",
-      alt: "Romantic Gifts",
-    },
-  ];
-
-  // API URL
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
+  // Banner slider state
+  const [bannerProducts, setBannerProducts] = useState([]);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   // Data state
   const [newArrivals, setNewArrivals] = useState([]);
@@ -84,16 +56,13 @@ const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch products, sort by date for new arrivals, and maybe featured flag for featured
         const res = await fetch(`${API_URL}/api/products`);
         const data = await res.json();
         
         if (data.success) {
-          // Mock logic: Newest 7 for Flash Sale, others for Featured
-          // In real world, use query params limit/sort
-          // Filter ONLY bundles as requested
           const bundleProducts = data.data.filter(p => p.isBundle);
           
+          setBannerProducts(bundleProducts.slice(0, 5)); // Top 5 for banner
           setNewArrivals(bundleProducts.slice(0, 10)); 
           setFeaturedProducts(bundleProducts);
         }
@@ -106,9 +75,31 @@ const HomePage = () => {
     fetchData();
   }, []);
 
+  // Auto slide banner every 4 seconds
+  useEffect(() => {
+    if (bannerProducts.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentBannerIndex(prev => (prev + 1) % bannerProducts.length);
+    }, 4000);
+    
+    return () => clearInterval(interval);
+  }, [bannerProducts.length]);
 
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "https://placehold.co/1200x400/ff9a9e/ffffff?text=Gift+Box";
+    if (imagePath.startsWith("http")) return imagePath;
+    const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+    return `${API_URL}${path}`;
+  };
 
+  const nextBanner = () => {
+    setCurrentBannerIndex(prev => (prev + 1) % bannerProducts.length);
+  };
 
+  const prevBanner = () => {
+    setCurrentBannerIndex(prev => (prev - 1 + bannerProducts.length) % bannerProducts.length);
+  };
 
   const [selectedProductForModal, setSelectedProductForModal] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -118,12 +109,9 @@ const HomePage = () => {
       setSelectedProductForModal(product);
       setIsModalOpen(true);
     } else {
-      // Direct add to cart
       addToCart(product);
     }
   };
-
-
 
   const scroll = (direction, ref) => {
     const container = ref.current;
@@ -136,20 +124,54 @@ const HomePage = () => {
     }
   };
 
+  const currentBannerProduct = bannerProducts[currentBannerIndex];
+
   return (
     <div className="homepage">
-      {/* Banner Section */}
-      <section className="banner-section">
-        <div className="banner-container">
-          {bannerImages.map((banner) => (
-            <div key={banner.id} className="banner-item">
-              <img src={banner.image} alt={banner.alt} />
+      {/* Hero Banner - Product Slider */}
+      <section className="hero-banner-section">
+        {bannerProducts.length > 0 && currentBannerProduct && (
+          <div className="hero-banner">
+            <button className="banner-nav-btn prev" onClick={prevBanner}>
+              <i className="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <Link to={`/product/${currentBannerProduct._id}`} className="banner-content">
+              <div className="banner-image-wrapper">
+                <img 
+                  src={getImageUrl(currentBannerProduct.image)} 
+                  alt={currentBannerProduct.name}
+                  className="banner-main-image"
+                />
+              </div>
+              <div className="banner-info">
+                <span className="banner-badge">🎁 Hot Bundle</span>
+                <h2 className="banner-title">{currentBannerProduct.name}</h2>
+                <p className="banner-desc">{currentBannerProduct.description?.substring(0, 100)}...</p>
+                <div className="banner-price">
+                  {new Intl.NumberFormat("vi-VN").format(currentBannerProduct.price)} VNĐ
+                </div>
+                <span className="banner-cta">Xem chi tiết →</span>
+              </div>
+            </Link>
+            
+            <button className="banner-nav-btn next" onClick={nextBanner}>
+              <i className="fa-solid fa-chevron-right"></i>
+            </button>
+            
+            {/* Dots indicator */}
+            <div className="banner-dots">
+              {bannerProducts.map((_, idx) => (
+                <span 
+                  key={idx} 
+                  className={`dot ${idx === currentBannerIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentBannerIndex(idx)}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </section>
-
-
 
       {/* Flash Sale Section with Horizontal Scroll */}
       <section className="new-arrivals-section">
@@ -193,16 +215,22 @@ const HomePage = () => {
             </div>
           </div>
           <div className="products-scroll-container" ref={newArrivalsRef}>
-            {newArrivals.map((product) => (
-              <ProductCard
-                key={product._id || product.id}
-                product={product}
-                type="flash-sale"
-                showDiscount={true}
-                discountPercent={50}
-                onAddToCart={handleOpenModal}
-              />
-            ))}
+            {newArrivals.map((product) => {
+              // Calculate actual discount percentage, default to 30% for flash sale
+              const discountPercent = product.comparePrice && product.comparePrice > product.price
+                ? Math.round((1 - product.price / product.comparePrice) * 100)
+                : 30; // Default 30% discount for flash sale items
+              return (
+                <ProductCard
+                  key={product._id || product.id}
+                  product={product}
+                  type="flash-sale"
+                  showDiscount={true}
+                  discountPercent={discountPercent}
+                  onAddToCart={handleOpenModal}
+                />
+              );
+            })}
           </div>
         </div>
       </section>

@@ -154,7 +154,11 @@ const CheckoutPage = () => {
         },
         body: JSON.stringify({
           userId: user?.id,
-          customerInfo,
+          customerInfo: {
+            ...customerInfo,
+            // Combine full address from separate fields
+            address: `${customerInfo.address}, ${customerInfo.district}, ${customerInfo.province}`.trim() || customerInfo.address || "Chưa có địa chỉ"
+          },
           items: cartItems.map(item => ({
             product: item.id,
             name: item.name,

@@ -2,6 +2,7 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HumanMessage, SystemMessage, AIMessage } from "@langchain/core/messages";
 import spiritsData from "./spiritData.js";
+import trainingExamples from "./trainingExamples.js";
 import Product from "../product/models/product.model.js";
 import dotenv from "dotenv";
 
@@ -135,17 +136,28 @@ const buildSystemPrompt = (spirit, analysis) => {
   
   // Determine current step in the guided flow
   // Step 1: Ask who they're buying for
-  // Step 2: Ask about the occasion/reason
-  // Step 3: Ask about preferences/hobbies
-  // Step 4: Give emotional recommendations with stories
+  // Step 2: Ask about the occasion/reason  
+  // Step 3: Ask about preferences/hobbies (REQUIRED before recommending)
+  // Step 4: Give recommendations with products
   
   let currentStep = 1;
-  if (recipient) currentStep = 2;
-  if (recipient && occasion) currentStep = 3;
-  if (recipient && occasion && preferences.length > 0) currentStep = 4;
-  if (recipient && (occasion || preferences.length > 0) && messageCount >= 3) currentStep = 4;
+  if (recipient) currentStep = 2; // Got recipient, ask occasion
+  if (recipient && occasion) currentStep = 3; // Got occasion, ask preferences
+  
+  // ONLY go to step 4 when:
+  // 1. We have recipient + occasion + preferences AND
+  // 2. At least 4 messages exchanged (to ensure we actually asked about preferences)
+  if (recipient && occasion && preferences.length > 0 && messageCount >= 4) {
+    currentStep = 4;
+  }
+  // Fallback: after 7+ messages, give recommendations even if missing some info
+  if (messageCount >= 7 && recipient) currentStep = 4;
   
   const hasEnoughInfo = currentStep >= 4;
+  
+  // Get random training examples for this spirit
+  const spiritExamples = trainingExamples[spirit.id] || [];
+  const randomExamples = spiritExamples.sort(() => Math.random() - 0.5).slice(0, 3);
   
   // Base personality
   let systemPrompt = `Bạn là ${spirit.name} ${spirit.emoji} - một tinh linh tư vấn quà tặng AI thông minh và thấu hiểu cảm xúc.
@@ -160,6 +172,9 @@ ${spirit.personality}
 - Xưng "mình" và gọi khách là "cậu"
 - Dùng emoji ${spirit.emoji} thường xuyên
 - Mỗi tin nhắn 2-3 câu thôi, ngắn gọn nhưng ấm áp
+
+## VÍ DỤ CÁCH TRẢ LỜI (học theo phong cách này):
+${randomExamples.map((ex, i) => `${i+1}. Khách: "${ex.user}" → Bạn: "${ex.spirit}"`).join('\n')}
 
 ## Thông tin đã thu thập:
 `;
@@ -211,27 +226,31 @@ Gợi ý cách hỏi tự nhiên (dựa vào người nhận đã biết):
       break;
       
     case 3:
-      systemPrompt += `🎯 NHIỆM VỤ: Khám phá SỞ THÍCH của người nhận
+      systemPrompt += `🎯 NHIỆM VỤ BẮT BUỘC: HỎI VỀ SỞ THÍCH của người nhận
 
-Gợi ý cách hỏi tự nhiên:
-- "Hiểu rồi! ${spirit.emoji} Vậy ${recipientNames[recipient] || 'người ấy'} thường thích gì nhỉ? Ví dụ như hoa, skincare, đồ handmade, hay thứ gì đặc biệt?"
-- "Hay quá! Cho mình biết thêm về sở thích của họ đi - họ thích phong cách nào: ngọt ngào, năng động, hay thanh lịch?"
+⛔ TUYỆT ĐỐI KHÔNG được gợi ý sản phẩm ở bước này!
+⛔ CHƯA đủ thông tin để gợi ý!
 
-⚠️ Phản hồi ĐỒNG CẢM với dịp/lý do trước, rồi mới hỏi về sở thích.`;
+Bạn PHẢI hỏi về sở thích TRƯỚC KHI gợi ý bất cứ thứ gì:
+- "Hiểu rồi! ${spirit.emoji} Vậy ${recipientNames[recipient] || 'người ấy'} thường thích gì nhỉ? Hoa, skincare, nến thơm, hay thứ gì khác?"
+- "Hay quá! ${spirit.emoji} Cho mình biết thêm - họ thích phong cách nào: ngọt ngào, đơn giản, hay sang trọng?"
+
+⚠️ CHỈ được hỏi về SỞ THÍCH. Phản hồi đồng cảm với dịp trước, rồi HỎI.`;
       break;
       
     case 4:
-      systemPrompt += `🎯 NHIỆM VỤ: Đưa ra GỢI Ý QUÀ với CÂU CHUYỆN CẢM XÚC
+      systemPrompt += `🎯 NHIỆM VỤ: Đưa ra GỢI Ý QUÀ CỤ THỂ
 
-Bạn PHẢI:
-1. Tóm tắt nhanh: "Mình hiểu rồi! Tặng cho [người nhận] nhân dịp [dịp], người thích [sở thích]..."
-2. Kể một CÂU CHUYỆN NGẮN về món quà phù hợp (2-3 câu), ví dụ:
-   - "Mình từng giúp một bạn tặng set hoa kèm socola cho người yêu nhân Valentine. Cô bạn ấy kể lại là khi mở ra, đối phương đã khóc vì bất ngờ và hạnh phúc ${spirit.emoji}"
-   - "Có một câu chuyện mình rất thích: một cậu tặng bundle chăm sóc da cho mẹ, ban đầu mẹ cằn nhằn 'tiền để dành đi'. Nhưng tối đó mẹ thử và gọi điện nói 'lâu lắm rồi mẹ không được chăm sóc bản thân như vậy'..."
-3. Gợi ý 2-3 loại quà CỤ THỂ phù hợp
-4. Mời xem tab 🎁 Quà: "Cậu qua tab 🎁 Quà bên cạnh để xem các bundle chi tiết nhé! Mình đã lọc sẵn những món phù hợp nhất rồi~"
+Bạn PHẢI làm theo thứ tự:
+1. Tóm tắt: "Mình hiểu rồi! ${spirit.emoji} Tặng cho [người nhận], người thích [sở thích]..."
+2. Kể CÂU CHUYỆN NGẮN (2 câu) về ai đó tặng quà tương tự và cảm xúc người nhận
+3. Nếu có sản phẩm gợi ý ở dưới, hãy đề cập TÊN CỤ THỂ và GIÁ của từng sản phẩm
+4. Hỏi: "Cậu thích món nào không?"
 
-⚠️ CÂU CHUYỆN phải chân thực, cảm động, liên quan đến hoàn cảnh của khách.`;
+⚠️ QUAN TRỌNG:
+- Phải đề cập TÊN SẢN PHẨM cụ thể nếu có trong danh sách
+- Kể chuyện phải LIÊN QUAN đến hoàn cảnh khách
+- Nếu không có sản phẩm gợi ý, hãy hỏi thêm về sở thích để gợi ý chính xác hơn`;
       break;
   }
 
@@ -256,23 +275,141 @@ export const chatWithSpirit = async (req, res) => {
     console.log("📊 Analysis:", analysis);
     console.log("🎯 Current Step:", currentStep, "Ready to recommend:", hasEnoughInfo);
 
+    // ONLY fetch products when we have ALL info (step 4)
+    let recommendedProducts = [];
+    if (hasEnoughInfo) {
+      try {
+        // ONLY get bundles that belong to THIS spirit
+        const allProducts = await Product.find({ 
+          isActive: true,
+          isBundle: true,
+          spiritType: spiritId  // Only bundles assigned to this spirit
+        }).limit(20);
+        
+        console.log(`🎁 Found ${allProducts.length} bundles for spirit ${spiritId}`);
+        
+        // Expanded keywords for better matching
+        const preferenceKeywords = {
+          flowers: ['hoa', 'flower', 'rose', 'bó hoa', 'hoa hồng'],
+          chocolate: ['chocolate', 'socola', 'kẹo', 'candy'],
+          skincare: ['skincare', 'mỹ phẩm', 'dưỡng', 'serum', 'kem', 'mặt nạ'],
+          perfume: ['nước hoa', 'perfume', 'thơm'],
+          jewelry: ['trang sức', 'vòng', 'nhẫn', 'dây chuyền'],
+          teddy: ['gấu bông', 'teddy', 'thú nhồi', 'gấu'],
+          book: ['sách', 'book', 'truyện'],
+          tech: ['tech', 'công nghệ', 'game', 'gaming'],
+          fashion: ['thời trang', 'túi', 'ví', 'khăn'],
+          wellness: ['spa', 'wellness', 'relax', 'thư giãn', 'yên', 'peace'],
+          candle: ['nến', 'nến thơm', 'candle', 'thông', 'tinh dầu'],
+          tea: ['trà', 'tea', 'cà phê', 'coffee'],
+          handmade: ['handmade', 'thủ công', 'tự làm'],
+          art: ['art', 'tranh', 'vẽ', 'painting']
+        };
+        
+        // Score products based on preferences
+        const scoredProducts = allProducts.map(product => {
+          let score = 0;
+          const productText = `${product.name} ${product.description || ''} ${(product.tags || []).join(' ')}`.toLowerCase();
+          
+          // Match preferences from user
+          if (analysis.preferences.length > 0) {
+            analysis.preferences.forEach(pref => {
+              // Check direct keyword match first
+              if (productText.includes(pref.toLowerCase())) {
+                score += 50; // High bonus for direct match
+              }
+              // Check mapped keywords
+              if (preferenceKeywords[pref]) {
+                preferenceKeywords[pref].forEach(kw => {
+                  if (productText.includes(kw.toLowerCase())) score += 30;
+                });
+              }
+              // Also check all categories for partial match
+              Object.values(preferenceKeywords).flat().forEach(kw => {
+                if (pref.toLowerCase().includes(kw) || kw.includes(pref.toLowerCase())) {
+                  if (productText.includes(kw)) score += 20;
+                }
+              });
+            });
+          }
+          
+          // Match occasion keywords
+          const occasionKeywords = {
+            birthday: ['sinh nhật', 'birthday'],
+            valentine: ['valentine', 'tình yêu', 'love'],
+            anniversary: ['kỷ niệm', 'anniversary'],
+            womensday: ['phụ nữ', '8/3', '20/10'],
+            thanks: ['cảm ơn', 'thank']
+          };
+          if (analysis.occasion && occasionKeywords[analysis.occasion]) {
+            occasionKeywords[analysis.occasion].forEach(kw => {
+              if (productText.includes(kw)) score += 15;
+            });
+          }
+          
+          return { product, score };
+        });
+        
+        // Sort by score
+        scoredProducts.sort((a, b) => b.score - a.score);
+        
+        // Get products with score > 0 (matched preferences)
+        const matchedProducts = scoredProducts.filter(s => s.score > 0);
+        
+        // If we have matched products, use them. Otherwise show all spirit bundles
+        const productsToShow = matchedProducts.length > 0 
+          ? matchedProducts.slice(0, 3) 
+          : scoredProducts.slice(0, 3);
+        
+        recommendedProducts = productsToShow.map(s => ({
+          _id: s.product._id,
+          name: s.product.name,
+          price: s.product.price,
+          image: s.product.image,
+          description: s.product.description?.substring(0, 100),
+          isBundle: s.product.isBundle,
+          bundleItems: s.product.bundleItems, // Include for modal
+          score: s.score
+        }));
+        
+        console.log("🎁 Recommended products:", recommendedProducts.map(p => `${p.name} (score: ${p.score})`));
+      } catch (dbError) {
+        console.error("Error fetching products:", dbError);
+      }
+    }
+
+    // Build enhanced system prompt with product info if available
+    let enhancedPrompt = systemPrompt;
+    if (recommendedProducts.length > 0 && hasEnoughInfo) {
+      enhancedPrompt += `
+
+## SẢN PHẨM GỢI Ý (LẤY TỪ DATABASE):
+${recommendedProducts.map((p, i) => `${i+1}. "${p.name}" - ${p.price?.toLocaleString()}đ ${p.isBundle ? '(Bundle)' : ''}`).join('\n')}
+
+⚠️ BẮT BUỘC: Khi gợi ý quà, hãy đề cập TÊN CỤ THỂ của sản phẩm ở trên. Ví dụ:
+"Mình gợi ý cho cậu **${recommendedProducts[0]?.name}** - ${recommendedProducts[0]?.price?.toLocaleString()}đ..."`;
+    }
+
     try {
       // Create LangChain model
       const model = createChatModel();
 
       // Build messages array for LangChain
       const messages = [
-        new SystemMessage(systemPrompt),
+        new SystemMessage(enhancedPrompt),
       ];
 
       // Add chat history (last 10 messages)
       chatHistory.slice(-10).forEach(msg => {
+        if (!msg || !msg.content) return; // Skip invalid messages
+        
         if (msg.role === 'user') {
           messages.push(new HumanMessage(msg.content));
         } else {
-          // Clean spirit emoji prefix if exists
-          const content = msg.content.replace(/^[❤️💕🌈🎉💗🙏💚🔥🕊️📚✨🌙🌸💮]+\s*/i, '');
-          messages.push(new AIMessage(content));
+          const content = (msg.content || "").replace(/^[❤️💕🌈🎉💗🙏💚🔥🕊️📚✨🌙🌸💮]+\s*/i, '');
+          if (content) {
+            messages.push(new AIMessage(content));
+          }
         }
       });
 
@@ -281,15 +418,22 @@ export const chatWithSpirit = async (req, res) => {
 
       // Invoke the model
       const response = await model.invoke(messages);
-      let text = response.content;
+      let text = response?.content || "";
+      
+      // Handle if content is not a string
+      if (typeof text !== 'string') {
+        text = String(text);
+      }
       
       // Clean up response
-      text = text.replace(new RegExp(`^${spirit.name}:?\\s*`, 'i'), '').trim();
-      text = text.replace(/^[❤️💕🌈🎉💗🙏💚🔥🕊️📚✨🌙🌸💮]+\s*:?\s*/i, '').trim();
+      if (text) {
+        text = text.replace(new RegExp(`^${spirit.name}:?\\s*`, 'i'), '').trim();
+        text = text.replace(/^[❤️💕🌈🎉💗🙏💚🔥🕊️📚✨🌙🌸💮]+\s*:?\s*/i, '').trim();
+      }
 
       // Add emoji prefix if not present
-      if (!text.startsWith(spirit.emoji)) {
-        text = `${spirit.emoji} ${text}`;
+      if (!text || !text.startsWith(spirit.emoji)) {
+        text = `${spirit.emoji} ${text || "Mình đang suy nghĩ..."}`;
       }
 
       res.json({ 
@@ -301,27 +445,36 @@ export const chatWithSpirit = async (req, res) => {
           spiritEmoji: spirit.emoji,
           readyToRecommend: hasEnoughInfo,
           currentStep: currentStep,
-          analysis: analysis
+          analysis: analysis,
+          // NEW: Include recommended products directly in response
+          recommendedProducts: hasEnoughInfo ? recommendedProducts : []
         }
       });
     } catch (aiError) {
       console.error("LangChain/Gemini API error:", aiError.message);
       
-      // Smart fallback based on analysis
+      // Smart fallback based on current step
       let fallbackResponse;
       
-      if (hasEnoughInfo) {
-        fallbackResponse = `${spirit.emoji} Mình đã hiểu rồi! Dựa vào những gì cậu chia sẻ, mình nghĩ có vài bundle quà rất phù hợp đấy! Cậu xem tab 🎁 Quà bên cạnh để chọn bundle ưng ý nhé~`;
-      } else if (!analysis.recipient) {
+      if (hasEnoughInfo && recommendedProducts.length > 0) {
+        fallbackResponse = `${spirit.emoji} Mình hiểu rồi! Dựa vào những gì cậu chia sẻ, mình gợi ý:\n\n` +
+          recommendedProducts.map((p, i) => `${i+1}. **${p.name}** - ${p.price?.toLocaleString()}đ`).join('\n') +
+          `\n\nCậu thấy món nào phù hợp không?`;
+      } else if (currentStep === 1 || !analysis.recipient) {
+        // Step 1: Ask for recipient
         fallbackResponse = `${spirit.emoji} Hay quá! Cho mình hỏi - cậu muốn tặng quà cho ai vậy? Người yêu, gia đình hay bạn bè?`;
-      } else if (!analysis.occasion && analysis.preferences.length === 0) {
+      } else if (currentStep === 2 || !analysis.occasion) {
+        // Step 2: Ask for occasion
         const recipientNames = {
-          lover: "người ấy", family: "họ", friend: "bạn ấy",
-          colleague: "họ", teacher: "thầy/cô"
+          lover: "người ấy", family: "gia đình", friend: "bạn ấy",
+          colleague: "đồng nghiệp", teacher: "thầy/cô"
         };
-        fallbackResponse = `${spirit.emoji} Tuyệt vời! Vậy ${recipientNames[analysis.recipient] || "họ"} thích gì nhỉ? Hoa, chocolate, skincare hay thứ gì khác?`;
+        fallbackResponse = `${spirit.emoji} Tuyệt! Tặng cho ${recipientNames[analysis.recipient] || "họ"} nhân dịp gì vậy? Sinh nhật, lễ tết, hay không dịp gì đặc biệt?`;
+      } else if (currentStep === 3) {
+        // Step 3: Ask for preferences - ALWAYS ask even if detected earlier
+        fallbackResponse = `${spirit.emoji} Hay đó! Vậy họ thường thích gì nhỉ? Hoa, nến thơm, skincare, hay thứ gì khác?`;
       } else {
-        fallbackResponse = `${spirit.emoji} Mình hiểu rồi! Để gợi ý quà phù hợp nhất, cho mình biết thêm: đây là dịp gì vậy?`;
+        fallbackResponse = `${spirit.emoji} Mình đang nghĩ... Cho mình thêm chút thời gian nhé~`;
       }
       
       res.json({
@@ -332,7 +485,8 @@ export const chatWithSpirit = async (req, res) => {
           spiritName: spirit.name,
           spiritEmoji: spirit.emoji,
           readyToRecommend: hasEnoughInfo,
-          analysis: analysis
+          analysis: analysis,
+          recommendedProducts: hasEnoughInfo ? recommendedProducts : []
         }
       });
     }

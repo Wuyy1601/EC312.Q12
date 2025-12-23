@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { FaHome, FaUsers, FaShoppingCart, FaBox, FaSignOutAlt, FaImages, FaIdCard } from "react-icons/fa";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
@@ -37,19 +36,19 @@ const AdminLayout = () => {
 
         <nav className="sidebar-nav">
           <NavLink to="/admin/dashboard" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <FaHome /> Dashboard
+            <i className="fa-solid fa-home"></i> Dashboard
           </NavLink>
           <NavLink to="/admin/users" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <FaUsers /> Người dùng
+            <i className="fa-solid fa-users"></i> Người dùng
           </NavLink>
           <NavLink to="/admin/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <FaBox /> Sản phẩm
+            <i className="fa-solid fa-box"></i> Sản phẩm
           </NavLink>
           <NavLink to="/admin/orders" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <FaShoppingCart /> Đơn hàng
+            <i className="fa-solid fa-cart-shopping"></i> Đơn hàng
           </NavLink>
           <NavLink to="/admin/card-templates" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <FaIdCard /> 🎴 Template Thiệp
+            <i className="fa-solid fa-id-card"></i> 🀴 Template Thiệp
           </NavLink>
         </nav>
 
@@ -58,7 +57,7 @@ const AdminLayout = () => {
             <span>👤 {adminUser.username || "Admin"}</span>
           </div>
           <button onClick={handleLogout} className="logout-btn">
-            <FaSignOutAlt /> Đăng xuất
+            <i className="fa-solid fa-right-from-bracket"></i> Đăng xuất
           </button>
         </div>
       </aside>
