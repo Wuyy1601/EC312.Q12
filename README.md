@@ -6,16 +6,27 @@
 
 <p align="center">
   <b>Đồ án môn học: Thiết kế Hệ thống Thương mại điện tử (EC312)</b><br/>
-  <i>Đại học Công nghệ Thông tin - ĐHQG TP.HCM</i>
+  <i>Trường Đại học Công nghệ Thông tin - ĐHQG TP.HCM</i><br/>
+  <i>Khoa Hệ thống Thông tin</i>
 </p>
 
-<p align="center">
-  <a href="#tổng-quan">Tổng quan</a> •
-  <a href="#tính-năng">Tính năng</a> •
-  <a href="#công-nghệ">Công nghệ</a> •
-  <a href="#cài-đặt">Cài đặt</a> •
-  <a href="#thành-viên">Thành viên</a>
-</p>
+---
+
+## 👥 Thông tin nhóm
+
+**Giảng viên hướng dẫn:** ThS. Trịnh Trọng Tín
+
+**Sinh viên thực hiện - Nhóm 3:**
+
+| STT | Họ và Tên | MSSV |
+|:---:|-----------|------|
+| 1 | **Thái Hoàng Hải Đăng** | 23520236 |
+| 2 | Lê Khánh Duy | 23520367 |
+| 3 | Đồng Khánh Huy | 23520605 |
+| 4 | Võ Thiên Lý | 23520909 |
+| 5 | Hồ Tuyết Sương | 23521366 |
+
+📁 **[Google Drive - Tài liệu đồ án](https://drive.google.com/drive/folders/1x7iCIz5k_pZoIEY5iOAM-V4n1oQAmp5Z)**
 
 ---
 
@@ -28,12 +39,9 @@
 - Cá nhân hóa trải nghiệm mua sắm với lịch sự kiện và nhắc nhở
 - Tích hợp thanh toán online an toàn (VNPay, Momo)
 
-### 📂 Tài liệu đồ án
-📁 **[Google Drive - Toàn bộ tài liệu](https://drive.google.com/drive/folders/1x7iCIz5k_pZoIEY5iOAM-V4n1oQAmp5Z)**
-
 ---
 
-## ✨ Tính năng
+## ✨ Tính năng chính
 
 | Module | Mô tả |
 |--------|-------|
@@ -49,9 +57,8 @@
 
 ---
 
-## 🛠️ Công nghệ
+## 🛠️ Công nghệ sử dụng
 
-### Tech Stack (MERN)
 | Layer | Technology |
 |-------|------------|
 | **Frontend** | React.js (Vite), CSS3 |
@@ -62,57 +69,28 @@
 | **Calendar** | Google Calendar API |
 | **Email** | Nodemailer (Gmail SMTP) |
 
-### Cấu trúc thư mục
-```
-EC312.Q12/
-├── BackEnd/                 # Node.js Express Server
-│   ├── src/
-│   │   ├── services/        # Các module nghiệp vụ
-│   │   │   ├── auth/        # Xác thực
-│   │   │   ├── product/     # Sản phẩm
-│   │   │   ├── order/       # Đơn hàng
-│   │   │   ├── calendar/    # Lịch sự kiện
-│   │   │   ├── spirit/      # AI Tư vấn
-│   │   │   ├── review/      # Đánh giá
-│   │   │   └── notification/# Email
-│   │   └── middlewares/
-│   └── .env
-│
-├── FrontEnd/FrontEnd/       # React Vite App
-│   ├── src/
-│   │   ├── pages/           # Các trang
-│   │   ├── components/      # Components tái sử dụng
-│   │   ├── context/         # React Context (Cart, Auth)
-│   │   └── assets/
-│   └── .env
-│
-└── README.md
-```
-
 ---
 
-## 🚀 Cài đặt
+## 🚀 Hướng dẫn cài đặt
 
-### Yêu cầu
-- Node.js >= 18.x
-- MongoDB 
-- Google Cloud Console (Calendar API, OAuth)
-- VNPay/Momo Sandbox credentials
-- Webhook SePay
+### Bước 1: Clone repository
 
-### 1. Clone repository
 ```bash
 git clone https://github.com/Wuyy1601/EC312.Q12.git
 cd EC312.Q12
 ```
 
-### 2. Cấu hình Backend
+### Bước 2: Cài đặt Backend
+
 ```bash
 cd BackEnd
 npm install
 ```
 
-Tạo file `.env`:
+### Bước 3: Cấu hình file `.env` cho Backend
+
+Tạo file `BackEnd/.env` với nội dung:
+
 ```env
 PORT=5001
 MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/giftnity
@@ -127,7 +105,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 # Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
 
-# Email (Nodemailer)
+# Email
 EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASSWORD=your_app_password
 
@@ -141,44 +119,68 @@ MOMO_ACCESS_KEY=your_momo_access
 MOMO_SECRET_KEY=your_momo_secret
 ```
 
-Chạy server:
+### Bước 4: Chạy Backend
+
 ```bash
 npm run dev
 ```
+> Backend sẽ chạy tại: http://localhost:5001
 
-### 3. Cấu hình Frontend
+### Bước 5: Cài đặt Frontend
+
+Mở terminal mới:
+
 ```bash
 cd FrontEnd/FrontEnd
 npm install
 ```
 
-Tạo file `.env`:
+### Bước 6: Cấu hình file `.env` cho Frontend
+
+Tạo file `FrontEnd/FrontEnd/.env`:
+
 ```env
 VITE_API_URL=http://localhost:5001
 ```
 
-Chạy app:
+### Bước 7: Chạy Frontend
+
 ```bash
 npm run dev
 ```
+> Frontend sẽ chạy tại: http://localhost:5173
 
-### 4. Truy cập
-- **Frontend:** http://localhost:5173
-- **Backend API:** http://localhost:5001
+### Bước 8: Truy cập ứng dụng
+
+Mở trình duyệt và truy cập: **http://localhost:5173**
 
 ---
 
-## 👥 Thành viên - Nhóm 3
+## � Cấu trúc thư mục
 
-| STT | Họ và Tên | MSSV |
-|:---:|-----------|------|
-| 1 | **Thái Hoàng Hải Đăng** | 23520236 |
-| 2 | Lê Khánh Duy | 23520367 |
-| 3 | Đồng Khánh Huy | 23520605 |
-| 4 | Võ Thiên Lý | 23520909 |
-| 5 | Hồ Tuyết Sương | 23521366 |
-
-**Giảng viên hướng dẫn:** ThS. Trịnh Trọng Tín
+```
+EC312.Q12/
+├── BackEnd/                 # Node.js Express Server
+│   ├── src/
+│   │   ├── services/        # Các module nghiệp vụ
+│   │   │   ├── auth/        # Xác thực
+│   │   │   ├── product/     # Sản phẩm
+│   │   │   ├── order/       # Đơn hàng
+│   │   │   ├── calendar/    # Lịch sự kiện
+│   │   │   ├── spirit/      # AI Tư vấn
+│   │   │   └── notification/# Email
+│   │   └── middlewares/
+│   └── .env
+│
+├── FrontEnd/FrontEnd/       # React Vite App
+│   ├── src/
+│   │   ├── pages/
+│   │   ├── components/
+│   │   └── context/
+│   └── .env
+│
+└── README.md
+```
 
 ---
 
@@ -189,5 +191,6 @@ npm run dev
 ---
 
 <p align="center">
-  Made with ❤️ by <b>Nhóm 3 - EC312.Q12</b>
+  Made with ❤️ by <b>Nhóm 3 - EC312.Q12</b><br/>
+  <i>TP. Hồ Chí Minh, ngày 24 tháng 12 năm 2025</i>
 </p>
