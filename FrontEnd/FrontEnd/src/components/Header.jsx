@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo/logo.png";
 import { useCart } from "../context/CartContext";
 import "./Header.css";
@@ -12,6 +12,7 @@ const getRandomAvatar = (userId) => {
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
@@ -66,11 +67,11 @@ const Header = () => {
 
         {/* Navigation Menu */}
         <nav className="nav-menu">
-          <Link to="/" className="nav-link">Trang chủ</Link>
-          <Link to="/products" className="nav-link">Sản phẩm</Link>
-          <Link to="/calendar" className="nav-link">Lịch</Link>
-          <Link to="/spirit-consultant" className="nav-link spirit-link">Tư Vấn Quà</Link>
-          <Link to="/contact" className="nav-link">Liên hệ</Link>
+          <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>Trang chủ</Link>
+          <Link to="/products" className={`nav-link ${location.pathname === '/products' || location.pathname.startsWith('/product/') ? 'active' : ''}`}>Sản phẩm</Link>
+          <Link to="/calendar" className={`nav-link ${location.pathname === '/calendar' ? 'active' : ''}`}>Lịch</Link>
+          <Link to="/spirit-consultant" className={`nav-link ${location.pathname === '/spirit-consultant' ? 'spirit-link' : ''}`}>Tư Vấn Quà</Link>
+          <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>Liên hệ</Link>
         </nav>
 
         {/* Right Side */}

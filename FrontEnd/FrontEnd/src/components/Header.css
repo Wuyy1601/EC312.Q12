@@ -85,6 +85,16 @@
   width: 100%;
 }
 
+/* Active nav link styling */
+.nav-link.active {
+  color: #e94560;
+  font-weight: 600;
+}
+
+.nav-link.active::after {
+  width: 100%;
+}
+
 /* Spirit Consultant Link - Special Styling */
 .nav-link.spirit-link {
   background: linear-gradient(135deg, #ec407a, #f48fb1);
