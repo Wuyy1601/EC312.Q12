@@ -95,9 +95,10 @@ EC312.Q12/
 
 ### Yêu cầu
 - Node.js >= 18.x
-- MongoDB Atlas account
+- MongoDB 
 - Google Cloud Console (Calendar API, OAuth)
 - VNPay/Momo Sandbox credentials
+- Webhook SePay
 
 ### 1. Clone repository
 ```bash
