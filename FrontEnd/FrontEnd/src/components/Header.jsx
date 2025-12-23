@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaSearch, FaShoppingCart, FaSignOutAlt, FaUser, FaBox, FaCalendarAlt } from "react-icons/fa";
 import logo from "../assets/logo/logo.png";
 import { useCart } from "../context/CartContext";
 import "./Header.css";
@@ -92,7 +91,7 @@ const Header = () => {
 
           {/* Cart */}
           <Link to="/cart" className="cart-link">
-            <FaShoppingCart className="cart-icon" size={24} color="#333" />
+            <i className="fa-solid fa-cart-shopping" style={{ fontSize: "24px", color: "#333" }}></i>
             {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
           </Link>
 
@@ -113,16 +112,16 @@ const Header = () => {
                       Xin chào, <strong>{user?.username || 'User'}</strong>
                     </div>
                     <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                      <FaUser /> Tài khoản của tôi
+                      <i className="fa-solid fa-user"></i> Tài khoản của tôi
                     </Link>
                     <Link to="/profile/orders" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                      <FaBox /> Đơn hàng
+                      <i className="fa-solid fa-box"></i> Đơn hàng
                     </Link>
                     <Link to="/calendar" className="dropdown-item" onClick={() => setShowDropdown(false)}>
-                      <FaCalendarAlt /> Lịch sự kiện
+                      <i className="fa-solid fa-calendar-alt"></i> Lịch sự kiện
                     </Link>
                     <button className="dropdown-item logout-btn" onClick={handleLogout}>
-                      <FaSignOutAlt /> Đăng xuất
+                      <i className="fa-solid fa-right-from-bracket"></i> Đăng xuất
                     </button>
                   </div>
                 </>

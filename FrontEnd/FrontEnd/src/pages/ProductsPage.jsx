@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { FaFilter, FaStar } from "react-icons/fa";
 import ProductCard from "@components/ProductCard";
 import BundleModal from "@components/BundleModal";
 import { useCart } from "../context/CartContext";
@@ -137,7 +136,7 @@ const ProductsPage = () => {
           {/* Sidebar Filters */}
           <aside className="products-sidebar">
             <div className="filter-header">
-              <FaFilter /> <h3>Bộ lọc tìm kiếm</h3>
+              <i className="fa-solid fa-filter"></i> <h3>Bộ lọc tìm kiếm</h3>
             </div>
             
             {/* Category Filter */}
@@ -192,7 +191,7 @@ const ProductsPage = () => {
                      />
                      <div className="stars">
                        {[...Array(5)].map((_, i) => (
-                         <FaStar key={i} className={i < star ? "star-gold" : "star-gray"} />
+                         <i key={i} className={i < star ? "fa-solid fa-star star-gold" : "fa-solid fa-star star-gray"}></i>
                        ))}
                      </div>
                   </label>

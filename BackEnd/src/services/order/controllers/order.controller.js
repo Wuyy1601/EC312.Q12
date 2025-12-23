@@ -49,21 +49,26 @@ export const createOrder = async (req, res) => {
        }
     }
 
-    // Check and Deduct Stock
-    // Check and Deduct Stock
+    // Check and Deduct Stock (skip if product not found - for demo purposes)
     for (const item of items) {
       const productId = item.product?._id || item.product;
+      
+      if (!productId) {
+        console.log("⚠️ Item has no product ID, skipping stock check:", item.name);
+        continue;
+      }
       
       let product;
       try {
          product = await Product.findById(productId);
       } catch (err) {
-         console.error("Invalid Product ID:", productId, err);
-         return res.status(400).json({ success: false, message: `ID sản phẩm không hợp lệ: ${productId}` });
+         console.log("⚠️ Invalid Product ID format, skipping stock check:", productId);
+         continue; // Skip invalid IDs instead of failing
       }
       
       if (!product) {
-         return res.status(400).json({ success: false, message: `Sản phẩm không tồn tại (ID: ${productId})` });
+         console.log("⚠️ Product not found in DB, skipping stock check:", productId);
+         continue; // Skip products not in DB
       }
 
       const qty = Number(item.quantity) || 1;

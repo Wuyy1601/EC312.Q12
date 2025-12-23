@@ -1,5 +1,4 @@
 import React from "react";
-import { FaShoppingCart, FaBolt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import "./ProductCard.css";
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaFacebook, FaInstagram, FaMapMarkerAlt, FaPhone } from "react-icons/fa";
 import "./Footer.css";
 
 const Footer = () => {
@@ -54,12 +53,12 @@ const Footer = () => {
           <ul>
             <li>
               <Link to="/contact">
-                <FaMapMarkerAlt style={{ marginRight: "8px" }} /> Địa chỉ
+                <i className="fa-solid fa-map-marker-alt" style={{ marginRight: "8px" }}></i> Địa chỉ
               </Link>
             </li>
             <li>
               <Link to="/hotline">
-                <FaPhone style={{ marginRight: "8px" }} /> Hotline
+                <i className="fa-solid fa-phone" style={{ marginRight: "8px" }}></i> Hotline
               </Link>
             </li>
           </ul>
@@ -75,7 +74,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center" }}
               >
-                <FaFacebook style={{ marginRight: "8px" }} /> Facebook
+                <i className="fa-brands fa-facebook" style={{ marginRight: "8px" }}></i> Facebook
               </a>
             </li>
             <li>
@@ -85,7 +84,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 style={{ display: "flex", alignItems: "center" }}
               >
-                <FaInstagram style={{ marginRight: "8px" }} /> Instagram
+                <i className="fa-brands fa-instagram" style={{ marginRight: "8px" }}></i> Instagram
               </a>
             </li>
           </ul>

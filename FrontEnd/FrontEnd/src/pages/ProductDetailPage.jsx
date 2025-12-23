@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaHeart, FaArrowLeft, FaChevronLeft, FaChevronRight, FaCartPlus } from "react-icons/fa";
 import ProductReviews from "@components/ProductReviews";
 import BundleModal from "@components/BundleModal";
 import { useCart } from "../context/CartContext";
@@ -291,7 +290,7 @@ const ProductDetailPage = () => {
                   fontSize: '1rem'
                 }}
               >
-                <FaCartPlus /> Thêm vào giỏ
+                <i className="fa-solid fa-cart-plus"></i> Thêm vào giỏ
               </button>
               <button 
                 className="buy-now-btn" 

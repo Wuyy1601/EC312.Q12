@@ -93,7 +93,7 @@ export const createProduct = async (req, res) => {
     console.log("Body:", req.body);
     console.log("Files:", req.files?.length || 0);
 
-    const { name, price, description, category, categoryName, stock, isBundle, bundleItems } = req.body;
+    const { name, price, description, story, category, categoryName, stock, isBundle, bundleItems, spiritType } = req.body;
 
     if (!name || !price) {
       return res.status(400).json({ success: false, message: "Tên và giá là bắt buộc" });
@@ -116,6 +116,7 @@ export const createProduct = async (req, res) => {
       name,
       price: Number(price),
       description: description || "",
+      story: story || "", // Add story field
       category: category || null, // Now expects ObjectId or null
       categoryName: categoryName || "", // Store category name for display
       stock: Number(stock) || 0,
@@ -123,11 +124,12 @@ export const createProduct = async (req, res) => {
       image: images[0] || "",
       isBundle: isBundle === "true" || isBundle === true,
       bundleItems: parsedBundleItems,
+      spiritType: spiritType || null, // Add spiritType field
     });
 
     await product.save();
 
-    console.log("✅ Product created:", product._id);
+    console.log("✅ Product created:", product._id, "spiritType:", product.spiritType);
     res.status(201).json({ success: true, message: "Tạo sản phẩm thành công", data: product });
   } catch (error) {
     console.error("❌ Create product error:", error);
@@ -138,7 +140,7 @@ export const createProduct = async (req, res) => {
 // Update product (Admin) - with file upload and bundle support
 export const updateProduct = async (req, res) => {
   try {
-    const { name, price, description, category, categoryName, stock, isBundle, bundleItems } = req.body;
+    const { name, price, description, story, category, categoryName, stock, isBundle, bundleItems, spiritType } = req.body;
     
     // Parse bundleItems nếu là string
     let parsedBundleItems = undefined;
@@ -154,10 +156,12 @@ export const updateProduct = async (req, res) => {
       name,
       price: Number(price),
       description,
+      story: story || "", // Add story field
       category: category || null,
       categoryName: categoryName || "",
       stock: Number(stock),
       isBundle: isBundle === "true" || isBundle === true,
+      spiritType: spiritType || null, // Add spiritType field
     };
 
     if (parsedBundleItems) {
@@ -178,6 +182,7 @@ export const updateProduct = async (req, res) => {
     Object.assign(product, updates);
     await product.save();
 
+    console.log("✅ Product updated:", product._id, "spiritType:", product.spiritType);
     res.json({ success: true, message: "Cập nhật thành công", data: product });
   } catch (error) {
     res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
