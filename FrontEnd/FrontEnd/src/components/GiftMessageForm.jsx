@@ -3,20 +3,20 @@ import { FaMagic, FaSpinner, FaCheck, FaGift } from "react-icons/fa";
 import "./GiftMessageForm.css";
 
 const RELATIONSHIPS = [
-  { value: "friend", label: "👫 Bạn bè" },
-  { value: "lover", label: "💕 Người yêu" },
-  { value: "family", label: "👨‍👩‍👧 Gia đình" },
-  { value: "colleague", label: "💼 Đồng nghiệp" },
-  { value: "other", label: "🎁 Khác" },
+  { value: "friend", label: "Bạn bè" },
+  { value: "lover", label: "Người yêu" },
+  { value: "family", label: "👨‍👩Gia đình" },
+  { value: "colleague", label: "Đồng nghiệp" },
+  { value: "other", label: "Khác" },
 ];
 
 const OCCASIONS = [
-  { value: "birthday", label: "🎂 Sinh nhật" },
-  { value: "anniversary", label: "💍 Kỷ niệm" },
-  { value: "christmas", label: "🎄 Giáng sinh" },
-  { value: "newyear", label: "🎆 Năm mới" },
-  { value: "graduation", label: "🎓 Tốt nghiệp" },
-  { value: "other", label: "🎁 Khác" },
+  { value: "birthday", label: "Sinh nhật" },
+  { value: "anniversary", label: "Kỷ niệm" },
+  { value: "christmas", label: "Giáng sinh" },
+  { value: "newyear", label: "Năm mới" },
+  { value: "graduation", label: "Tốt nghiệp" },
+  { value: "other", label: "Khác" },
 ];
 
 const GiftMessageForm = ({ giftMessage, setGiftMessage, onPreviewUpdate }) => {
