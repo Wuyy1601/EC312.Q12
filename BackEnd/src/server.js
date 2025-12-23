@@ -11,7 +11,7 @@ import productApp from "./services/product/index.js";
 import categoryApp from "./services/category/index.js";
 import reviewRoutes from "./services/review/routes/review.routes.js";
 import geminiApp from "./services/gemini/index.js";
-import templateApp from "./services/template/index.js";
+
 import spiritApp from "./services/spirit/index.js";
 import cardTemplateApp from "./services/cardTemplate/index.js";
 import calendarApp from "./services/calendar/index.js";
@@ -65,8 +65,7 @@ app.use("/api/reviews", reviewRoutes);
 // Mount Gemini Service
 app.use(geminiApp);
 
-// Mount Template Service
-app.use(templateApp);
+
 
 // Mount Spirit Service
 app.use(spiritApp);
