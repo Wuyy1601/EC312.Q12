@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { FaHome, FaUsers, FaShoppingCart, FaBox, FaSignOutAlt, FaImages, FaIdCard } from "react-icons/fa";
 import "./AdminLayout.css";
@@ -6,6 +6,14 @@ import "./AdminLayout.css";
 const AdminLayout = () => {
   const navigate = useNavigate();
   const adminUser = JSON.parse(localStorage.getItem("adminUser") || "{}");
+  const adminToken = localStorage.getItem("adminToken");
+
+  // Check if admin is logged in - use useEffect to avoid calling navigate during render
+  useEffect(() => {
+    if (!adminToken) {
+      navigate("/admin/login");
+    }
+  }, [adminToken, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -13,10 +21,8 @@ const AdminLayout = () => {
     navigate("/admin/login");
   };
 
-  // Check if admin is logged in
-  const adminToken = localStorage.getItem("adminToken");
+  // Don't render if not logged in
   if (!adminToken) {
-    navigate("/admin/login");
     return null;
   }
 
