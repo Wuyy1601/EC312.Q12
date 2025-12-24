@@ -154,7 +154,7 @@ npm run dev
 
 Mở trình duyệt và truy cập: **http://localhost:5173**
 
----
+Mở trình duyệt và truy cập: **http://localhost:5173**
 
 ## � Cấu trúc thư mục
 

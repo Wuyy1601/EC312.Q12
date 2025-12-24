@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext();
 
@@ -7,6 +8,7 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState(null);
+  const toast = useToast();
 
   // Helper to get correct key
   const getCartKey = (currentUser) => {
@@ -70,6 +72,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (product, quantity = 1, customization = null) => {
+    // Check if user is logged in
+    if (!user) {
+      toast.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+      return false;
+    }
+
     const currentCart = [...cartItems];
     
     // Create a unique ID for the cart item based on product ID and customization
@@ -93,7 +101,8 @@ export const CartProvider = ({ children }) => {
       });
     }
     saveCart(currentCart);
-    alert(product.isBundle ? "Đã thêm Bundle vào giỏ hàng!" : "Đã thêm sản phẩm vào giỏ hàng!");
+    toast.success(product.isBundle ? "Đã thêm Bundle vào giỏ hàng!" : "Đã thêm sản phẩm vào giỏ hàng!");
+    return true;
   };
 
   const removeFromCart = (productId) => {
