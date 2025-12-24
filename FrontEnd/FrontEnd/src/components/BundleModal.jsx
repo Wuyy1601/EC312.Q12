@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../context/ToastContext';
 import './BundleModal.css';
 
 const BundleModal = ({ product, isOpen, onClose, onAddToCart }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [currentPrice, setCurrentPrice] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
     if (product && product.bundleItems && product.bundleItems.length > 0) {
@@ -25,7 +27,7 @@ const BundleModal = ({ product, isOpen, onClose, onAddToCart }) => {
     
     // If checking would result in less than 1 item, prevent unchecking
     if (selectedItems.length <= 1 && selectedItems.includes(itemId)) {
-      alert("Phải chọn ít nhất 1 sản phẩm!");
+      toast.warning("Phải chọn ít nhất 1 sản phẩm!");
       return;
     }
 

@@ -279,14 +279,17 @@ export const chatWithSpirit = async (req, res) => {
     let recommendedProducts = [];
     if (hasEnoughInfo) {
       try {
-        // ONLY get bundles that belong to THIS spirit
+        // Get spirit's categories
+        const spiritCategories = spirit.categories || [];
+        
+        // Get bundles that belong to THIS spirit's categories
         const allProducts = await Product.find({ 
           isActive: true,
           isBundle: true,
-          spiritType: spiritId  // Only bundles assigned to this spirit
+          categoryName: { $in: spiritCategories }  // Filter by spirit's categories
         }).limit(20);
         
-        console.log(`🎁 Found ${allProducts.length} bundles for spirit ${spiritId}`);
+        console.log(`🎁 Found ${allProducts.length} bundles for spirit ${spiritId} with categories [${spiritCategories.join(', ')}]`);
         
         // Expanded keywords for better matching
         const preferenceKeywords = {
@@ -356,10 +359,10 @@ export const chatWithSpirit = async (req, res) => {
         // Get products with score > 0 (matched preferences)
         const matchedProducts = scoredProducts.filter(s => s.score > 0);
         
-        // If we have matched products, use them. Otherwise show all spirit bundles
+        // ONLY return 1 bundle (best match or first in category)
         const productsToShow = matchedProducts.length > 0 
-          ? matchedProducts.slice(0, 3) 
-          : scoredProducts.slice(0, 3);
+          ? matchedProducts.slice(0, 1)  // Only 1 bundle
+          : scoredProducts.slice(0, 1);  // Only 1 bundle
         
         recommendedProducts = productsToShow.map(s => ({
           _id: s.product._id,
@@ -369,10 +372,11 @@ export const chatWithSpirit = async (req, res) => {
           description: s.product.description?.substring(0, 100),
           isBundle: s.product.isBundle,
           bundleItems: s.product.bundleItems, // Include for modal
+          categoryName: s.product.categoryName, // Include category for reference
           score: s.score
         }));
         
-        console.log("🎁 Recommended products:", recommendedProducts.map(p => `${p.name} (score: ${p.score})`));
+        console.log("🎁 Recommended bundle:", recommendedProducts.map(p => `${p.name} (category: ${p.categoryName}, score: ${p.score})`));
       } catch (dbError) {
         console.error("Error fetching products:", dbError);
       }
@@ -539,7 +543,7 @@ const BUDGET_RANGES = {
 
 // Note: Stories now come from the database `story` field on each product/bundle
 
-// Get bundles recommended by a spirit - WITH SMART FILTERING
+// Get bundles recommended by a spirit - WITH SMART FILTERING BY CATEGORY
 export const getSpiritBundles = async (req, res) => {
   try {
     const { spiritId } = req.params;
@@ -551,12 +555,15 @@ export const getSpiritBundles = async (req, res) => {
       return res.status(404).json({ success: false, message: "Không tìm thấy tinh linh" });
     }
 
-    console.log("🎁 Filtering bundles with:", { recipient, occasion, preferences, budget });
+    // Get spirit's categories
+    const spiritCategories = spirit.categories || [];
+    console.log("🎁 Filtering bundles with:", { spiritCategories, recipient, occasion, preferences, budget });
 
     // Build query based on budget
     let query = { 
       isBundle: true,
-      isActive: true
+      isActive: true,
+      categoryName: { $in: spiritCategories }  // Filter by spirit's categories
     };
 
     // Add price filter if budget specified
@@ -567,32 +574,17 @@ export const getSpiritBundles = async (req, res) => {
       };
     }
 
-    // Priority 1: Find bundles explicitly assigned to this spirit
-    const explicitBundles = await Product.find({
-      isBundle: true,
-      isActive: true,
-      spiritType: spiritId
-    });
+    // Find bundles by spirit's categories
+    const categoryBundles = await Product.find(query).limit(20);
 
-    // Priority 2: Find bundles by keywords (as fallback/supplement)
-    // Exclude ones we already found
-    const explicitIds = explicitBundles.map(b => b._id);
-    
-    const keywordQuery = { ...query };
-    keywordQuery._id = { $nin: explicitIds }; // Exclude found
-    
-    const keywordBundles = await Product.find(keywordQuery).limit(20);
-    
-    // Combine lists
-    let bundles = [...explicitBundles, ...keywordBundles];
+    // Use category bundles only
+    let bundles = categoryBundles;
 
     if (bundles.length === 0) {
-      // Emergency fallback if absolutely nothing found
-      const fallbackQuery = { isBundle: true, isActive: true };
-      if (explicitIds.length > 0) fallbackQuery._id = { $nin: explicitIds };
-      
-      const fallbackBundles = await Product.find(fallbackQuery).limit(10);
-      bundles = [...explicitBundles, ...fallbackBundles];
+      // Fallback: get bundles without price filter
+      delete query.price;
+      const fallbackBundles = await Product.find(query).limit(10);
+      bundles = fallbackBundles;
     }
 
     if (bundles.length === 0) {
@@ -612,11 +604,6 @@ export const getSpiritBundles = async (req, res) => {
     // Score bundles based on analysis
     const scoredBundles = bundles.map(bundle => {
       let score = 0;
-      
-      // HUGE BONUS for explicit spirit match
-      if (bundle.spiritType === spiritId) {
-        score += 500; // Almost guarantees top spots
-      }
 
       const bundleText = `${bundle.name} ${bundle.description || ''} ${(bundle.tags || []).join(' ')}`.toLowerCase();
       
