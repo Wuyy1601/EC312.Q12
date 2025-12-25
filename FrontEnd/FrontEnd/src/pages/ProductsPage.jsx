@@ -83,13 +83,21 @@ const ProductsPage = () => {
       if (data.success) {
         let sortedProducts = data.data.filter(p => p.isBundle); // Filter ONLY bundles
         
-        // Client-side Search Filtering
+        // Client-side Search Filtering - search in product NAME only for precision
         if (filters.search) {
-           const lowerSearch = filters.search.toLowerCase().trim();
-           sortedProducts = sortedProducts.filter(p => 
-             p.name.toLowerCase().includes(lowerSearch) || 
-             (p.description && p.description.toLowerCase().includes(lowerSearch))
-           );
+           // Split and filter out short words (< 3 chars) to reduce noise
+           const searchWords = filters.search.toLowerCase().trim().split(/\s+/)
+             .filter(word => word.length >= 3);
+           
+           if (searchWords.length > 0) {
+             sortedProducts = sortedProducts.filter(p => {
+               const productName = p.name.toLowerCase();
+               // Count how many keywords match in product NAME
+               const matchCount = searchWords.filter(word => productName.includes(word)).length;
+               // Require at least 1 match in name
+               return matchCount >= 1;
+             });
+           }
         }
 
         // Client-side Filtering

@@ -128,6 +128,7 @@
 /* Main Content */
 .products-main {
   flex: 1;
+  min-width: 0; /* Fix flex overflow with grid */
 }
 
 .products-header {

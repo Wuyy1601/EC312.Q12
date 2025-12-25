@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useToast } from "../context/ToastContext";
 import "./CartPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
@@ -8,6 +9,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 const CartPage = () => {
   const navigate = useNavigate();
   const { cartItems, updateQuantity, removeFromCart } = useCart();
+  const toast = useToast();
   
   const [selectedItems, setSelectedItems] = useState(new Set());
   
@@ -69,7 +71,7 @@ const CartPage = () => {
       setDiscount(20);
     } else {
       setDiscount(0);
-      alert("Mã giảm giá không hợp lệ");
+      toast.warning("Mã giảm giá không hợp lệ");
     }
   };
 
@@ -164,14 +166,14 @@ const CartPage = () => {
                     <div className="quantity-control">
                       <button
                         className="qty-btn"
-                        onClick={() => updateQuantity(item.id, -1)}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       >
                         <i className="fa-solid fa-minus" style={{ fontSize: "10px" }}></i>
                       </button>
                       <span className="qty-value">{item.quantity}</span>
                       <button
                         className="qty-btn"
-                        onClick={() => updateQuantity(item.id, 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >
                         <i className="fa-solid fa-plus" style={{ fontSize: "10px" }}></i>
                       </button>

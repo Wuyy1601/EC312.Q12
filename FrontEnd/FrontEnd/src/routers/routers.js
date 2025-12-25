@@ -107,8 +107,16 @@ export const adminDashboardRoutes = [
     component: lazy(() => import("@pages/admin/AdminProducts")),
   },
   {
+    path: "categories",
+    component: lazy(() => import("@pages/admin/AdminCategories")),
+  },
+  {
     path: "orders",
     component: lazy(() => import("@pages/admin/AdminOrders")),
+  },
+  {
+    path: "reviews",
+    component: lazy(() => import("@pages/admin/AdminReviews")),
   },
   {
     path: "templates",

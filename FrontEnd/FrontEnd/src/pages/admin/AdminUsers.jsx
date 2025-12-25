@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch, FaPlus } from "react-icons/fa";
 import "./AdminUsers.css";
+
+const API_URL = "http://localhost:5001";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [editingUser, setEditingUser] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -15,7 +18,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5001/api/auth/users", {
+      const res = await fetch(`${API_URL}/api/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -32,7 +35,7 @@ const AdminUsers = () => {
 
     try {
       const token = localStorage.getItem("adminToken");
-      await fetch(`http://localhost:5001/api/auth/users/${id}`, {
+      await fetch(`${API_URL}/api/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -45,7 +48,7 @@ const AdminUsers = () => {
   const handleUpdate = async (id, updates) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5001/api/auth/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -60,6 +63,29 @@ const AdminUsers = () => {
       }
     } catch (error) {
       console.error("Update user error:", error);
+    }
+  };
+
+  const handleCreate = async (userData) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/api/admin/users`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchUsers();
+        setIsCreating(false);
+      } else {
+        alert(data.message || "Lỗi tạo user");
+      }
+    } catch (error) {
+      console.error("Create user error:", error);
     }
   };
 
@@ -85,6 +111,9 @@ const AdminUsers = () => {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <button className="add-btn" onClick={() => setIsCreating(true)}>
+          <FaPlus /> Thêm user
+        </button>
       </div>
 
       <table className="users-table">
@@ -171,6 +200,55 @@ const AdminUsers = () => {
                 </button>
                 <button type="submit" className="save-btn">
                   Lưu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {isCreating && (
+        <div className="modal-overlay" onClick={() => setIsCreating(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>Tạo user mới</h2>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                handleCreate({
+                  username: formData.get("username"),
+                  email: formData.get("email"),
+                  password: formData.get("password"),
+                  role: formData.get("role"),
+                });
+              }}
+            >
+              <div className="form-group">
+                <label>Username</label>
+                <input name="username" required />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input name="email" type="email" required />
+              </div>
+              <div className="form-group">
+                <label>Password</label>
+                <input name="password" type="password" required minLength={6} />
+              </div>
+              <div className="form-group">
+                <label>Role</label>
+                <select name="role" defaultValue="user">
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setIsCreating(false)}>
+                  Hủy
+                </button>
+                <button type="submit" className="save-btn">
+                  Tạo
                 </button>
               </div>
             </form>

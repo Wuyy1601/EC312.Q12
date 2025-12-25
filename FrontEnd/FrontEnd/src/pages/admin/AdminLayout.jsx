@@ -44,8 +44,14 @@ const AdminLayout = () => {
           <NavLink to="/admin/products" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             <i className="fa-solid fa-box"></i> Sản phẩm
           </NavLink>
+          <NavLink to="/admin/categories" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <i className="fa-solid fa-folder"></i> Danh mục
+          </NavLink>
           <NavLink to="/admin/orders" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             <i className="fa-solid fa-cart-shopping"></i> Đơn hàng
+          </NavLink>
+          <NavLink to="/admin/reviews" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <i className="fa-solid fa-star"></i> Đánh giá
           </NavLink>
           <NavLink to="/admin/card-templates" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
             <i className="fa-solid fa-id-card"></i> 🀴 Template Thiệp
