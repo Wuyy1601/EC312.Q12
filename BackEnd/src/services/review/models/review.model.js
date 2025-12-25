@@ -33,6 +33,24 @@ const reviewSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    // Sentiment Analysis fields
+    sentiment: {
+      type: String,
+      enum: ["positive", "neutral", "negative", null],
+      default: null,
+    },
+    sentimentScore: {
+      type: Number, // -1 to 1 scale
+      default: null,
+    },
+    sentimentAnalysis: {
+      type: String, // AI explanation
+      default: null,
+    },
+    needsAttention: {
+      type: Boolean, // Flag for negative reviews that need CS attention
+      default: false,
+    },
   },
   {
     timestamps: true,

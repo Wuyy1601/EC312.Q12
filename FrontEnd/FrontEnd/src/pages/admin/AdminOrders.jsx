@@ -24,7 +24,7 @@ const AdminOrders = () => {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch("http://localhost:5001/api/orders/all", {
+      const res = await fetch("http://localhost:5001/api/admin/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -39,7 +39,7 @@ const AdminOrders = () => {
   const handleStatusChange = async (orderCode, newStatus) => {
     try {
       const token = localStorage.getItem("adminToken");
-      const res = await fetch(`http://localhost:5001/api/orders/${orderCode}/status`, {
+      const res = await fetch(`http://localhost:5001/api/admin/orders/${orderCode}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ const AdminOrders = () => {
 
     try {
       const token = localStorage.getItem("adminToken");
-      await fetch(`http://localhost:5001/api/orders/${orderCode}`, {
+      await fetch(`http://localhost:5001/api/admin/orders/${orderCode}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -180,6 +180,24 @@ const AdminOrders = () => {
               <p><strong>Thanh toán:</strong> {selectedOrder.paymentMethod}</p>
               <p><strong>Trạng thái:</strong> {ORDER_STATUSES.find(s => s.value === selectedOrder.orderStatus)?.label}</p>
             </div>
+
+            {/* Show Cancellation Reason if Cancelled */}
+            {selectedOrder.orderStatus === "cancelled" && selectedOrder.note && (
+              <div className="detail-section" style={{ 
+                background: '#fee2e2', 
+                borderRadius: '8px', 
+                padding: '1rem',
+                border: '1px solid #fecaca'
+              }}>
+                <h3 style={{ color: '#dc2626', margin: '0 0 0.5rem 0' }}>🚫 Lý do hủy đơn</h3>
+                <p style={{ color: '#7f1d1d', margin: 0 }}>
+                  {selectedOrder.note.includes('[Khách hủy:') 
+                    ? selectedOrder.note.match(/\[Khách hủy:\s*([^\]]*)\]/)?.[1] || 'Không có lý do'
+                    : selectedOrder.note
+                  }
+                </p>
+              </div>
+            )}
 
             <button className="close-btn" onClick={() => setSelectedOrder(null)}>
               Đóng

@@ -47,7 +47,10 @@ const AdminProducts = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/products`);
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/api/admin/products`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setProducts(data.data || []);
     } catch (error) {
@@ -69,7 +72,10 @@ const AdminProducts = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/categories`);
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/api/admin/categories`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setCategories(data.data || []);
     } catch (error) {
@@ -80,7 +86,11 @@ const AdminProducts = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) return;
     try {
-      await fetch(`${API_URL}/api/products/${id}`, { method: "DELETE" });
+      const token = localStorage.getItem("adminToken");
+      await fetch(`${API_URL}/api/admin/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(products.filter((p) => p._id !== id));
     } catch (error) {
       console.error("Delete product error:", error);
@@ -120,9 +130,13 @@ const AdminProducts = () => {
     if (!newCategoryName.trim()) return;
     
     try {
-      const res = await fetch(`${API_URL}/api/categories`, {
+      const token = localStorage.getItem("adminToken");
+      const res = await fetch(`${API_URL}/api/admin/categories`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ name: newCategoryName.trim() }),
       });
       const data = await res.json();
@@ -173,10 +187,15 @@ const AdminProducts = () => {
     selectedFiles.forEach((file) => formData.append("images", file));
 
     try {
-      const url = editingProduct ? `${API_URL}/api/products/${editingProduct._id}` : `${API_URL}/api/products`;
+      const token = localStorage.getItem("adminToken");
+      const url = editingProduct ? `${API_URL}/api/admin/products/${editingProduct._id}` : `${API_URL}/api/admin/products`;
       const method = editingProduct ? "PUT" : "POST";
 
-      const res = await fetch(url, { method, body: formData });
+      const res = await fetch(url, { 
+        method, 
+        body: formData,
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
 
       if (data.success) {

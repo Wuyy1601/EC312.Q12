@@ -15,6 +15,7 @@ import geminiApp from "./services/gemini/index.js";
 import spiritApp from "./services/spirit/index.js";
 import cardTemplateApp from "./services/cardTemplate/index.js";
 import calendarApp from "./services/calendar/index.js";
+import adminApp from "./services/admin/index.js";
 import { startReminderScheduler } from "./services/calendar/scheduler/reminderScheduler.js";
 
 
@@ -75,6 +76,9 @@ app.use(cardTemplateApp);
 
 // Mount Calendar Service
 app.use(calendarApp);
+
+// Mount Admin Service
+app.use(adminApp);
 
 
 // =============================================

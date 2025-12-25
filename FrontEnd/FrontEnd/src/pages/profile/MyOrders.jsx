@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { FaBox, FaChevronRight, FaCopy, FaCheck, FaSpinner, FaCreditCard } from 'react-icons/fa';
+import { useToast } from '../../context/ToastContext';
 import './MyOrders.css';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
@@ -23,6 +24,7 @@ const PAYMENT_STATUSES = {
 
 const MyOrders = () => {
   const { user } = useOutletContext();
+  const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -30,6 +32,10 @@ const MyOrders = () => {
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [copied, setCopied] = useState(null);
   const [checking, setChecking] = useState(false);
+
+  // Cancel Modal State
+  const [cancelModalOrder, setCancelModalOrder] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
 
   useEffect(() => {
     if (user?.id) {
@@ -68,32 +74,36 @@ const MyOrders = () => {
     }
   };
 
-  // Hủy đơn hàng
-  const handleCancelOrder = async (order) => {
-    const reason = prompt("Vui lòng nhập lý do hủy đơn (nếu có):");
-    if (reason === null) return; // User pressed Cancel
+  // Open Cancel Modal
+  const openCancelModal = (order) => {
+    setCancelModalOrder(order);
+    setCancelReason("");
+  };
 
-    if (!window.confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+  // Hủy đơn hàng (submit from modal)
+  const handleCancelOrder = async () => {
+    if (!cancelModalOrder) return;
 
     try {
-      const res = await fetch(`${API_URL}/api/orders/${order.orderCode}/cancel`, {
+      const res = await fetch(`${API_URL}/api/orders/${cancelModalOrder.orderCode}/cancel`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason })
+        body: JSON.stringify({ reason: cancelReason })
       });
       const data = await res.json();
       if (data.success) {
-        alert("Hủy đơn hàng thành công!");
-        setOrders(orders.map(o => o.orderCode === order.orderCode ? { ...o, orderStatus: "cancelled" } : o));
-        if (selectedOrder?.orderCode === order.orderCode) {
+        toast.success("Hủy đơn hàng thành công!");
+        setOrders(orders.map(o => o.orderCode === cancelModalOrder.orderCode ? { ...o, orderStatus: "cancelled" } : o));
+        if (selectedOrder?.orderCode === cancelModalOrder.orderCode) {
           setSelectedOrder({ ...selectedOrder, orderStatus: "cancelled" });
         }
+        setCancelModalOrder(null);
       } else {
-        alert(data.message || "Không thể hủy đơn hàng");
+        toast.error(data.message || "Không thể hủy đơn hàng");
       }
     } catch (error) {
       console.error("Cancel order error:", error);
-      alert("Lỗi kết nối");
+      toast.error("Lỗi kết nối");
     }
   };
 
@@ -115,7 +125,7 @@ const MyOrders = () => {
           ));
           setPaymentOrder(null);
           setPaymentInfo(null);
-          alert("Thanh toán thành công!");
+          toast.success("Thanh toán thành công!");
         }
       } catch (error) {
         console.error("Check payment error:", error);
@@ -233,7 +243,7 @@ const MyOrders = () => {
                 {(order.orderStatus === "pending" || order.orderStatus === "confirmed") && (
                   <button 
                     className="cancel-btn"
-                    onClick={() => handleCancelOrder(order)}
+                    onClick={() => openCancelModal(order)}
                     style={{ marginLeft: '8px', padding: '8px 12px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
                   >
                     Hủy đơn
@@ -386,7 +396,7 @@ const MyOrders = () => {
             {(selectedOrder.orderStatus === "pending" || selectedOrder.orderStatus === "confirmed") && (
               <button 
                 className="cancel-btn-modal"
-                onClick={() => handleCancelOrder(selectedOrder)}
+                onClick={() => { setSelectedOrder(null); openCancelModal(selectedOrder); }}
                 style={{ marginRight: '10px', padding: '8px 16px', border: '1px solid #ef4444', color: '#ef4444', background: 'white', borderRadius: '6px', cursor: 'pointer' }}
               >
                 Hủy đơn hàng
@@ -396,6 +406,82 @@ const MyOrders = () => {
             <button className="close-modal-btn" onClick={() => setSelectedOrder(null)}>
               Đóng
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Cute Cancel Order Modal */}
+      {cancelModalOrder && (
+        <div className="order-modal-overlay" onClick={() => setCancelModalOrder(null)}>
+          <div 
+            className="order-modal cancel-modal" 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(135deg, #fff5f8 0%, #ffeef5 100%)',
+              border: '2px solid #f8bbd0',
+              borderRadius: '20px',
+              padding: '2rem',
+              maxWidth: '400px',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>😢</div>
+            <h2 style={{ color: '#880e4f', marginBottom: '0.5rem' }}>Bạn muốn hủy đơn?</h2>
+            <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Đơn hàng <strong>#{cancelModalOrder.orderCode}</strong>
+            </p>
+            
+            <div style={{ textAlign: 'left', marginBottom: '1rem' }}>
+              <label style={{ color: '#880e4f', fontWeight: '500', fontSize: '0.9rem' }}>
+                Lý do hủy (không bắt buộc):
+              </label>
+              <textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Ví dụ: Đổi ý, tìm được nơi khác rẻ hơn..."
+                style={{
+                  width: '100%',
+                  minHeight: '80px',
+                  marginTop: '0.5rem',
+                  padding: '0.8rem',
+                  border: '1px solid #f8bbd0',
+                  borderRadius: '12px',
+                  fontSize: '0.9rem',
+                  resize: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+              <button
+                onClick={() => setCancelModalOrder(null)}
+                style={{
+                  padding: '0.7rem 1.5rem',
+                  border: '1px solid #ddd',
+                  background: 'white',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Giữ lại đơn
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                style={{
+                  padding: '0.7rem 1.5rem',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                  color: 'white',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Xác nhận hủy
+              </button>
+            </div>
           </div>
         </div>
       )}

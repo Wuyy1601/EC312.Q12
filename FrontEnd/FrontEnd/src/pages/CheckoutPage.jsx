@@ -11,6 +11,7 @@ import {
 import GreetingCardModal from "../components/GreetingCardModal";
 import ThreeDCard from "../components/ThreeDCard"; // Vanilla Three.js version
 import { useCart } from "../context/CartContext";
+import { useToast } from "../context/ToastContext";
 import "./CheckoutPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
@@ -33,6 +34,7 @@ const CheckoutPage = () => {
 
   // Template State
   const [templates, setTemplates] = useState([]);
+  const toast = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [templateCategory, setTemplateCategory] = useState('');
 
@@ -193,7 +195,7 @@ const CheckoutPage = () => {
       }
 
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     } finally {
       setLoading(false);
     }
