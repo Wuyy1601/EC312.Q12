@@ -40,6 +40,7 @@ const CheckoutPage = () => {
 
   // 3D Card State
   const [show3DCard, setShow3DCard] = useState(false);
+  const [loadingAI, setLoadingAI] = useState(false);
   const [cardConfig, setCardConfig] = useState({
     message: "",
     sender: "Bạn",
@@ -47,6 +48,40 @@ const CheckoutPage = () => {
     coverColor: "#ffcdc9",
     coverImage: null
   });
+
+  // AI Generate greeting message
+  const handleAIGenerate = async () => {
+    if (!cardConfig.recipient) {
+      toast.error("Vui lòng nhập tên người nhận trước!");
+      return;
+    }
+    
+    setLoadingAI(true);
+    try {
+      const res = await fetch(`${API_URL}/api/gemini/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipient: cardConfig.recipient,
+          relationship: "Người thân",
+          occasion: templateCategory || "Sinh nhật",
+          prompt: "",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCardConfig(prev => ({ ...prev, message: data.text }));
+        toast.success("Đã tạo lời chúc AI thành công!");
+      } else {
+        toast.error("Lỗi AI: " + (data.message || "Không thể tạo lời chúc"));
+      }
+    } catch (error) {
+      console.error("AI Generate error:", error);
+      toast.error("Không thể tạo lời chúc lúc này.");
+    } finally {
+      setLoadingAI(false);
+    }
+  };
 
   // Fetch templates
   useEffect(() => {
@@ -397,8 +432,35 @@ const CheckoutPage = () => {
                       <textarea 
                         value={cardConfig.message} 
                         onChange={e => setCardConfig({...cardConfig, message: e.target.value})}
-                        placeholder="Nhập lời chúc..."
+                        placeholder="Nhập lời chúc hoặc nhấn nút AI bên dưới..."
                       />
+                      <button 
+                        type="button"
+                        onClick={handleAIGenerate}
+                        disabled={loadingAI}
+                        style={{
+                          marginTop: '8px',
+                          padding: '10px 16px',
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '8px',
+                          cursor: loadingAI ? 'not-allowed' : 'pointer',
+                          fontWeight: 'bold',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          opacity: loadingAI ? 0.7 : 1
+                        }}
+                      >
+                        {loadingAI ? (
+                          <>⏳ Đang tạo lời chúc...</>
+                        ) : (
+                          <>✨ Tạo lời chúc bằng AI</>
+                        )}
+                      </button>
                    </div>
                    
                    <div className="control-group">
