@@ -7,7 +7,7 @@ dotenv.config();
 const router = express.Router();
 
 // Initialize Gemini
-const API_KEY = process.env.GEMINI_API_KEY || "API_GEMINI_KEY";
+const API_KEY = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const generateGreeting = async (req, res) => {

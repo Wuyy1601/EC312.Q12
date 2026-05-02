@@ -1,15 +1,36 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const privateKeyPath = path.join(__dirname, "../keys/private_key.pem");
+const publicKeyPath = path.join(__dirname, "../keys/public_key.pem");
+
+let privateKey, publicKey;
+try {
+  privateKey = fs.readFileSync(privateKeyPath, "utf8");
+  publicKey = fs.readFileSync(publicKeyPath, "utf8");
+} catch (error) {
+  console.error("Failed to load RSA keys. Please run 'node src/shared/keys/generateKeys.js' first.");
+  process.exit(1);
+}
 
 export const generateToken = (payload, expiresIn = "7d") => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+  // Sign using RS256 and the private key
+  return jwt.sign(payload, privateKey, { algorithm: "RS256", expiresIn });
 };
 
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    // VULNERABLE: We explicitly allow both RS256 and HS256 to simulate an older, vulnerable JWT library.
+    // This allows the attacker to switch the alg to HS256, and the library will use publicKey as the HMAC secret.
+    return jwt.verify(token, publicKey, { algorithms: ["RS256", "HS256"] });
   } catch (error) {
     return null;
   }

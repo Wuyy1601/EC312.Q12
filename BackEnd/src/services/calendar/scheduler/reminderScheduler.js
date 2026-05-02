@@ -9,8 +9,7 @@ dotenv.config();
 // Import User model để lấy thông tin user
 const getUserModel = async () => {
     const userConnection = mongoose.createConnection(
-        process.env.USERS_DB_URI || process.env.MONGODB_URI || "mongodb://localhost:27017/giftnity_users",
-        { useNewUrlParser: true, useUnifiedTopology: true }
+        process.env.USERS_DB_URI || process.env.MONGODB_URI || "mongodb://localhost:27017/giftnity_users"
     );
 
     const userSchema = new mongoose.Schema({

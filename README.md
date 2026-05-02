@@ -1,196 +1,164 @@
-<p align="center">
-  <img src="FrontEnd/FrontEnd/src/assets/logo/logo.png" alt="Giftnity Logo" width="200"/>
-</p>
+# 🎁 Giftnity — E-Commerce Gift Platform
 
-<h1 align="center">🎁 GIFTNITY - Hệ Thống Kinh Doanh Quà Tặng Trực Tuyến</h1>
-
-<p align="center">
-  <b>Đồ án môn học: Thiết kế Hệ thống Thương mại điện tử (EC312)</b><br/>
-  <i>Trường Đại học Công nghệ Thông tin - ĐHQG TP.HCM</i><br/>
-  <i>Khoa Hệ thống Thông tin</i>
-</p>
+> **EC312.Q12** — Full-stack e-commerce platform for personalized gifts, built with React + Node.js/Express + MongoDB.
 
 ---
 
-## 👥 Thông tin nhóm
+## 📐 Architecture
 
-**Giảng viên hướng dẫn:** ThS. Trịnh Trọng Tín
-
-**Sinh viên thực hiện - Nhóm 3:**
-
-| STT | Họ và Tên | MSSV |
-|:---:|-----------|------|
-| 1 | **Thái Hoàng Hải Đăng** | 23520236 |
-| 2 | Lê Khánh Duy | 23520367 |
-| 3 | Đồng Khánh Huy | 23520605 |
-| 4 | Võ Thiên Lý | 23520909 |
-| 5 | Hồ Tuyết Sương | 23521366 |
-
-📁 **[Google Drive - Tài liệu đồ án](https://drive.google.com/drive/folders/1x7iCIz5k_pZoIEY5iOAM-V4n1oQAmp5Z)**
-
----
-
-## 📋 Tổng quan
-
-**Giftnity** là nền tảng thương mại điện tử chuyên về quà tặng, tích hợp **AI tư vấn thông minh** giúp người dùng tìm được món quà phù hợp nhất dựa trên tính cách người nhận, dịp lễ và ngân sách.
-
-### 🎯 Mục tiêu
-- Giải quyết bài toán **"khó chọn quà"** bằng trí tuệ nhân tạo
-- Cá nhân hóa trải nghiệm mua sắm với lịch sự kiện và nhắc nhở
-- Tích hợp thanh toán online an toàn (VNPay, Momo)
-
----
-
-## ✨ Tính năng chính
-
-| Module | Mô tả |
-|--------|-------|
-| 🔐 **Xác thực** | Đăng ký, Đăng nhập, Google OAuth, Quên mật khẩu |
-| 🤖 **AI Tư vấn (Spirit)** | Chat với AI để nhận gợi ý quà tặng thông minh |
-| 📅 **Lịch Sự kiện** | Quản lý sinh nhật, kỷ niệm, đồng bộ Google Calendar |
-| 🛒 **Mua sắm** | Danh mục sản phẩm, Combo/Bundle, Giỏ hàng real-time |
-| 💳 **Thanh toán** | VNPay, Momo, Chuyển khoản (Sepay), COD |
-| ⭐ **Đánh giá** | Rating & Review sản phẩm |
-| 💌 **Thiệp 3D** | Tùy chỉnh thiệp điện tử đi kèm quà |
-| 📧 **Thông báo** | Email xác nhận đơn hàng, nhắc nhở sự kiện |
-| 🛠️ **Quản trị** | Dashboard Admin quản lý sản phẩm, đơn hàng, người dùng |
+```
+EC312.Q12/
+├── BackEnd/                  # Node.js/Express API Gateway
+│   ├── src/
+│   │   ├── server.js         # Entry point & API Gateway
+│   │   ├── services/         # Domain-based microservices
+│   │   │   ├── user/         # Auth & User management
+│   │   │   ├── product/      # Product catalog
+│   │   │   ├── order/        # Order processing
+│   │   │   ├── category/     # Categories
+│   │   │   ├── review/       # Product reviews
+│   │   │   ├── gemini/       # AI visual search (Gemini)
+│   │   │   ├── spirit/       # Spirit gift consultant (AI)
+│   │   │   ├── calendar/     # Event calendar & reminders
+│   │   │   ├── cardTemplate/ # Greeting card templates
+│   │   │   └── admin/        # Admin dashboard APIs
+│   │   ├── shared/           # Shared utilities (JWT, upload)
+│   │   └── utils/            # Helper functions
+│   ├── Dockerfile
+│   └── .env.example
+├── FrontEnd/                 # React + Vite SPA
+│   ├── src/
+│   │   ├── components/       # Reusable UI components
+│   │   ├── pages/            # Route pages
+│   │   ├── context/          # React Context (Cart, Toast)
+│   │   ├── routers/          # Route definitions
+│   │   └── utils/            # Frontend utilities
+│   ├── Dockerfile
+│   └── .env.example
+├── docker-compose.yml        # Full-stack orchestration
+└── README.md
+```
 
 ---
 
-## 🛠️ Công nghệ sử dụng
+## 🚀 Quick Start (Local Development)
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | React.js (Vite), CSS3 |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB Atlas |
-| **AI** | Google Gemini API, LangChain |
-| **Payment** | VNPay, Momo (Sandbox) |
-| **Calendar** | Google Calendar API |
-| **Email** | Nodemailer (Gmail SMTP) |
+### Prerequisites
 
----
+- **Node.js** ≥ 18
+- **MongoDB** (local or Atlas)
+- **Git**
 
-## 🚀 Hướng dẫn cài đặt
-
-### Bước 1: Clone repository
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/Wuyy1601/EC312.Q12.git
 cd EC312.Q12
 ```
 
-### Bước 2: Cài đặt Backend
+### 2. Backend Setup
 
 ```bash
 cd BackEnd
+cp .env.example .env      # Edit .env with your MongoDB URI & secrets
 npm install
+npm run dev               # Starts on http://localhost:5001
 ```
 
-### Bước 3: Cấu hình file `.env` cho Backend
+### 3. Frontend Setup
 
-Tạo file `BackEnd/.env` với nội dung:
+```bash
+cd FrontEnd
+cp .env.example .env      # Edit VITE_API_URL if needed
+npm install
+npm run dev               # Starts on http://localhost:5173
+```
+
+---
+
+## 🐳 Docker Deployment
+
+### Prerequisites
+
+- **Docker** ≥ 20
+- **Docker Compose** ≥ 2.0
+
+### Build & Run (One Command)
+
+```bash
+# From the project root (EC312.Q12/)
+docker compose up --build -d
+```
+
+| Service    | URL                        |
+|------------|----------------------------|
+| Frontend   | http://localhost:3000       |
+| Backend    | http://localhost:5001       |
+| MongoDB    | mongodb://localhost:27017  |
+
+### Environment Variables
+
+Create a `.env` file in the root directory for Docker secrets:
 
 ```env
-PORT=5001
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/giftnity
-
-# JWT
-JWT_SECRET=your_jwt_secret
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-
-# Gemini AI
-GEMINI_API_KEY=your_gemini_api_key
-
-# Email
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASSWORD=your_app_password
-
-# VNPay
-VNPAY_TMN_CODE=your_vnpay_code
-VNPAY_HASH_SECRET=your_vnpay_secret
-
-# Momo
-MOMO_PARTNER_CODE=your_momo_code
-MOMO_ACCESS_KEY=your_momo_access
-MOMO_SECRET_KEY=your_momo_secret
+JWT_SECRET=your-strong-random-secret-here
+GEMINI_API_KEY=your-gemini-api-key
 ```
 
-### Bước 4: Chạy Backend
+### Useful Commands
 
 ```bash
-npm run dev
-```
-> Backend sẽ chạy tại: http://localhost:5001
+# View logs
+docker compose logs -f
 
-### Bước 5: Cài đặt Frontend
+# Stop all services
+docker compose down
 
-Mở terminal mới:
+# Stop and remove volumes (⚠️ deletes data)
+docker compose down -v
 
-```bash
-cd FrontEnd/FrontEnd
-npm install
-```
-
-### Bước 6: Cấu hình file `.env` cho Frontend
-
-Tạo file `FrontEnd/FrontEnd/.env`:
-
-```env
-VITE_API_URL=http://localhost:5001
+# Rebuild a specific service
+docker compose up --build backend -d
 ```
 
-### Bước 7: Chạy Frontend
+---
 
-```bash
-npm run dev
-```
-> Frontend sẽ chạy tại: http://localhost:5173
+## 🛠️ Tech Stack
 
-### Bước 8: Truy cập ứng dụng
+| Layer      | Technology                                |
+|------------|-------------------------------------------|
+| Frontend   | React 18, Vite 5, React Router v6        |
+| Backend    | Node.js, Express 5, Mongoose             |
+| Database   | MongoDB 7                                 |
+| AI         | Google Gemini API, LangChain              |
+| Auth       | JWT (jsonwebtoken), bcryptjs              |
+| Email      | Nodemailer                                |
+| Upload     | Multer                                    |
+| Deploy     | Docker, Nginx                             |
 
-Mở trình duyệt và truy cập: **http://localhost:5173**
+---
 
-Mở trình duyệt và truy cập: **http://localhost:5173**
+## 📦 API Overview
 
-## � Cấu trúc thư mục
+| Endpoint                | Method | Description            |
+|-------------------------|--------|------------------------|
+| `/api/auth/register`    | POST   | User registration      |
+| `/api/auth/login`       | POST   | User login             |
+| `/api/auth/me`          | GET    | Get current user       |
+| `/api/products`         | GET    | List all products      |
+| `/api/orders`           | GET    | List user orders       |
+| `/api/reviews`          | GET    | Product reviews        |
+| `/api/gemini/*`         | POST   | AI visual search       |
+| `/health`               | GET    | Health check           |
 
-```
-EC312.Q12/
-├── BackEnd/                 # Node.js Express Server
-│   ├── src/
-│   │   ├── services/        # Các module nghiệp vụ
-│   │   │   ├── auth/        # Xác thực
-│   │   │   ├── product/     # Sản phẩm
-│   │   │   ├── order/       # Đơn hàng
-│   │   │   ├── calendar/    # Lịch sự kiện
-│   │   │   ├── spirit/      # AI Tư vấn
-│   │   │   └── notification/# Email
-│   │   └── middlewares/
-│   └── .env
-│
-├── FrontEnd/FrontEnd/       # React Vite App
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   └── context/
-│   └── .env
-│
-└── README.md
-```
+---
+
+## 👥 Team
+
+**Course:** EC312.Q12 — UIT
 
 ---
 
 ## 📄 License
 
-Đồ án phục vụ mục đích học tập tại **Trường Đại học Công nghệ Thông tin - ĐHQG TP.HCM**.
-
----
-
-<p align="center">
-  Made with ❤️ by <b>Nhóm 3 - EC312.Q12</b><br/>
-  <i>TP. Hồ Chí Minh, ngày 24 tháng 12 năm 2025</i>
-</p>
+This project is for educational purposes.
