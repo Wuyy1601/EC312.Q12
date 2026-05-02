@@ -1,0 +1,119 @@
+/* ========================================
+   FOOTER — PREMIUM DARK DESIGN
+   ======================================== */
+
+.footer {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+  color: #c8c8d8;
+  padding: 3.5rem 2rem 1.5rem;
+  margin-top: auto;
+}
+
+.footer-container {
+  max-width: var(--max-width, 1400px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.footer-section h3 {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  padding-bottom: 0.6rem;
+}
+
+.footer-section h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 28px;
+  height: 2px;
+  background: var(--color-primary-gradient, linear-gradient(135deg, #e94560, #ff6b8a));
+  border-radius: 2px;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section ul li {
+  margin-bottom: 0.6rem;
+}
+
+.footer-section ul li a {
+  color: #9898b0;
+  text-decoration: none;
+  font-size: 0.88rem;
+  transition: all var(--transition-fast, 150ms ease);
+  display: inline-flex;
+  align-items: center;
+}
+
+.footer-section ul li a:hover {
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.payment-methods {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.payment-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.7;
+  filter: grayscale(30%);
+  transition: all var(--transition-base, 250ms ease);
+}
+
+.payment-logo:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+.footer-text {
+  color: #6a6a82;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 768px) {
+  .footer {
+    padding: 2.5rem 1.5rem 1.2rem;
+  }
+
+  .footer-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+  }
+}

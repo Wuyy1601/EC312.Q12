@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  # ── MongoDB ────────────────────────────────
+  mongodb:
+    image: mongo:7
+    container_name: giftnity-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - giftnity-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend API ────────────────────────────
+  backend:
+    build:
+      context: ./BackEnd
+      dockerfile: Dockerfile
+    container_name: giftnity-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - FRONTEND_URL=http://localhost:3000
+      - MONGODB_USERS_URI=mongodb://mongodb:27017/giftnity_users
+      - MONGODB_PRODUCTS_URI=mongodb://mongodb:27017/giftnity_products
+      - MONGODB_ORDERS_URI=mongodb://mongodb:27017/giftnity_orders
+      - MONGODB_CALENDAR_URI=mongodb://mongodb:27017/giftnity_calendar
+      - JWT_SECRET=${JWT_SECRET:-change-this-to-a-strong-random-secret}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    volumes:
+      - backend_uploads:/app/src/uploads
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - giftnity-network
+
+  # ── Frontend (Nginx) ──────────────────────
+  frontend:
+    build:
+      context: ./FrontEnd
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5001
+    container_name: giftnity-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - giftnity-network
+
+volumes:
+  mongo_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  giftnity-network:
+    driver: bridge
