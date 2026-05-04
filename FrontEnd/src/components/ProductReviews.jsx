@@ -189,7 +189,10 @@ const ProductReviews = ({ productId, user }) => {
                 <span className="review-date">{formatDate(review.createdAt)}</span>
               </div>
               <div className="review-content">
-                <p>{review.comment}</p>
+                {/* =====  VULNERABLE (XSS): Render HTML thô từ user input ===== */}
+                <p dangerouslySetInnerHTML={{ __html: review.comment }} />
+                {/* =====  DEFENSE (XSS): Bật dòng dưới, tắt dòng trên ===== */}
+                {/* <p>{review.comment}</p> */}
               </div>
             </div>
           ))

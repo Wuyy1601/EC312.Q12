@@ -30,7 +30,8 @@ export const verifyToken = (token) => {
   try {
     // VULNERABLE: We explicitly allow both RS256 and HS256 to simulate an older, vulnerable JWT library.
     // This allows the attacker to switch the alg to HS256, and the library will use publicKey as the HMAC secret.
-    return jwt.verify(token, publicKey, { algorithms: ["RS256", "HS256"] });
+    // return jwt.verify(token, publicKey, { algorithms: ["RS256", "HS256"] });
+    return jwt.verify(token, publicKey, { algorithms: ["RS256"] });
   } catch (error) {
     return null;
   }

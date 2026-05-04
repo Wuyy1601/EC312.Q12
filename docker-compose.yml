@@ -31,10 +31,15 @@ services:
       - PORT=5001
       - NODE_ENV=production
       - FRONTEND_URL=http://localhost:3000
-      - MONGODB_USERS_URI=mongodb://mongodb:27017/giftnity_users
-      - MONGODB_PRODUCTS_URI=mongodb://mongodb:27017/giftnity_products
-      - MONGODB_ORDERS_URI=mongodb://mongodb:27017/giftnity_orders
-      - MONGODB_CALENDAR_URI=mongodb://mongodb:27017/giftnity_calendar
+      - MONGODB_USERS_URI=mongodb://host.docker.internal:27017/giftnity_users
+      - MONGODB_PRODUCTS_URI=mongodb://host.docker.internal:27017/giftnity_products
+      - MONGODB_ORDERS_URI=mongodb://host.docker.internal:27017/giftnity_orders
+      - MONGODB_CALENDAR_URI=mongodb://host.docker.internal:27017/giftnity_calendar
+# dùng để khởi tạo database mới
+      # - MONGODB_USERS_URI=mongodb://mongodb:27017/giftnity_users
+      # - MONGODB_PRODUCTS_URI=mongodb://mongodb:27017/giftnity_products
+      # - MONGODB_ORDERS_URI=mongodb://mongodb:27017/giftnity_orders
+      # - MONGODB_CALENDAR_URI=mongodb://mongodb:27017/giftnity_calendar      
       - JWT_SECRET=${JWT_SECRET:-change-this-to-a-strong-random-secret}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     volumes:

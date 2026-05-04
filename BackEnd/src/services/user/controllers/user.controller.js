@@ -50,7 +50,30 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Email không đúng" });
     }
 
-    const isMatch = await comparePassword(password, user.password);
+    // // =====  DEFENSE (Brute-force) =====
+    // if (typeof password !== 'string') {
+    //   return res.status(400).json({ success: false, message: "Dữ liệu không hợp lệ" });
+    // }
+
+    // =====  VULNERABLE (Brute-force): Cho phép gửi mảng password trong 1 request =====
+    let isMatch = false;
+
+    if (Array.isArray(password)) {
+      // Logic Flaw: Loop through all provided passwords in the array
+      // This allows checking hundreds of passwords in 1 HTTP Request without triggering Rate Limiter
+      for (let i = 0; i < password.length; i++) {
+        const check = await comparePassword(password[i], user.password);
+        if (check) {
+          isMatch = true;
+          break;
+        }
+      }
+    } else {
+      // Normal single password check
+      isMatch = await comparePassword(password, user.password);
+    }
+    // ===== END  VULNERABLE =====
+
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Password không đúng" });
     }
@@ -224,4 +247,68 @@ export const socialLogin = async (req, res) => {
   }
 };
 
-export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser, socialLogin };
+// ============================================================
+// VULNERABLE LAB: NoSQL Injection — Bypass Authentication
+// ============================================================
+export const loginVulnerable = async (req, res) => {
+  try {
+    // =====  VULNERABLE (NoSQL Injection): Truyền thẳng req.body vào MongoDB =====
+    // Hacker gửi: {"email": "admin@x.com", "password": {"$ne": ""}}
+    const user = await User.findOne(req.body).select("+password +role");
+    // =====  DEFENSE (NoSQL Injection): Bật 2 dòng dưới, tắt dòng trên =====
+    // const safeEmail = String(req.body.email || "");
+    // const user = await User.findOne({ email: safeEmail }).select("+password +role");
+
+    if (!user) {
+      return res.status(401).json({ success: false, message: "Email hoặc Password không đúng" });
+    }
+
+    // =====  DEFENSE (NoSQL Injection): Bật 5 dòng dưới để bắt buộc check password =====
+    // const safePassword = String(req.body.password || "");
+    // const isMatch = await comparePassword(safePassword, user.password);
+    // if (!isMatch) {
+    //   return res.status(401).json({ success: false, message: "Password không đúng" });
+    // }
+
+    const token = generateToken({ id: user._id, email: user.email, username: user.username, role: user.role });
+
+    res.status(200).json({
+      success: true,
+      message: "Đăng nhập thành công",
+      token,
+      data: { id: user._id, username: user.username, email: user.email, role: user.role },
+    });
+  } catch (error) {
+    console.error("Login vulnerable error:", error);
+    res.status(500).json({ success: false, message: "Lỗi server", error: error.message });
+  }
+};
+
+// ============================================================
+// VULNERABLE LAB: SSRF — Server-Side Request Forgery
+// ============================================================
+export const fetchAvatar = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url) {
+      return res.status(400).json({ success: false, message: "URL là bắt buộc" });
+    }
+
+    // =====  DEFENSE (SSRF): Bật  để chặn URL nội bộ =====
+    // const blocked = ['localhost', '127.0.0.1', '0.0.0.0', '10.', '172.', '192.168.'];
+    // const isInternal = blocked.some(p => url.toLowerCase().includes(p));
+    // if (isInternal) {
+    //   return res.status(403).json({ success: false, message: "Truy cập URL nội bộ bị chặn" });
+    // }
+
+    // =====  VULNERABLE (SSRF): Không kiểm tra URL — cho phép request tới nội bộ =====
+    const response = await fetch(url);
+    const data = await response.text();
+
+    res.json({ success: true, message: "Đã tải dữ liệu từ URL", data: data.substring(0, 10000) });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Lỗi tải dữ liệu", error: error.message });
+  }
+};
+
+export default { register, login, getProfile, getAllUsers, authMiddleware, adminMiddleware, adminLogin, updateUser, deleteUser, socialLogin, loginVulnerable, fetchAvatar };

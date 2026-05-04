@@ -464,7 +464,7 @@ export const simulatePayment = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   try {
     const { orderCode } = req.params;
-    const { reason } = req.body;
+    const { reason } = req.body || {}; // CSRF attack via GET request won't have a body
     
     const order = await Order.findOne({ orderCode });
     if (!order) {

