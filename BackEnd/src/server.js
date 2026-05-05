@@ -36,7 +36,17 @@ const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173")
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // Cho phép requests không có origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      // Cho phép tất cả vercel.app subdomains
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+      // Cho phép các origin cụ thể trong FRONTEND_URL
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Cho phép localhost khi dev
+      if (origin.includes("localhost")) return callback(null, true);
+      callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
