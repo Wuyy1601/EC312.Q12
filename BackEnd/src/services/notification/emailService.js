@@ -4,31 +4,38 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Tạo transporter để gửi email
-const transporter = nodemailer.createTransport(
-  process.env.EMAIL_HOST
-    ? {
-      // Mailtrap or custom SMTP
-      host: process.env.EMAIL_HOST,
-      port: process.env.EMAIL_PORT || 2525,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
-      },
-    }
-    : {
-      // Gmail
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
-      },
-    }
-);
+const isEmailConfigured = !!(process.env.EMAIL_USER && (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS));
+
+const transporter = isEmailConfigured
+  ? nodemailer.createTransport(
+      process.env.EMAIL_HOST
+        ? {
+          host: process.env.EMAIL_HOST,
+          port: process.env.EMAIL_PORT || 2525,
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
+          },
+        }
+        : {
+          service: "gmail",
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").replace(/\s+/g, ""),
+          },
+        }
+    )
+  : null;
+
+if (!isEmailConfigured) {
+  console.log("⚠️ Email chưa cấu hình (EMAIL_USER/EMAIL_PASS trống) — tính năng gửi email sẽ bị tắt.");
+}
 
 /**
  * Gửi email xác nhận đơn hàng
  */
 export const sendOrderConfirmation = async (order) => {
+  if (!transporter) return { success: false, error: "Email chưa cấu hình" };
   const itemsList = order.items
     .map(
       (item) =>
@@ -145,6 +152,7 @@ export const sendOrderConfirmation = async (order) => {
  * Gửi email thông báo thanh toán thành công
  */
 export const sendPaymentSuccess = async (order) => {
+  if (!transporter) return { success: false, error: "Email chưa cấu hình" };
   const mailOptions = {
     from: `"Giftnity Shop" <${process.env.EMAIL_USER}>`,
     to: order.customerInfo.email,
@@ -230,6 +238,7 @@ function getPaymentMethodName(method) {
 };
 
 export const sendResetPasswordEmail = async (email, username, resetUrl) => {
+  if (!isEmailConfigured) throw new Error("Email chưa cấu hình (EMAIL_USER/EMAIL_PASS trống)");
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -266,6 +275,7 @@ export const sendResetPasswordEmail = async (email, username, resetUrl) => {
  * Gửi email nhắc nhở sự kiện đặc biệt
  */
 export const sendEventReminder = async (user, event, daysUntil, giftSuggestions = null) => {
+  if (!transporter) return { success: false, error: "Email chưa cấu hình" };
   const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
 
   const mailOptions = {

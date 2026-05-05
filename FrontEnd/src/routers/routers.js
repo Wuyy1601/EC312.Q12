@@ -52,11 +52,11 @@ export const adminRoutes = [
 export const authRoutes = [
   {
     path: "/login",
-    component: lazy(() => import("@pages/auth/LoginPage")),
+    component: lazy(() => import("@pages/auth/AuthPage")),
   },
   {
     path: "/register",
-    component: lazy(() => import("@pages/auth/RegisterPage")),
+    component: lazy(() => import("@pages/auth/AuthPage")),
   },
 ];
 

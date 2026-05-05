@@ -118,13 +118,13 @@ button {
   font-family: inherit;
   background-color: var(--color-rose);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: background-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base), opacity var(--transition-base);
   color: var(--color-text);
+  will-change: transform;
 }
 
 button:hover {
   background-color: var(--color-rose-dark);
-  transform: translateY(-1px);
 }
 
 button:focus,
@@ -133,9 +133,6 @@ button:focus-visible {
   outline-offset: 2px;
 }
 
-button:active {
-  transform: translateY(0);
-}
 
 /* ── Global Container ──────────────────────────────────── */
 .container {

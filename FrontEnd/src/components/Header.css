@@ -66,7 +66,7 @@
   padding: 0.5rem 0.85rem;
   border-radius: var(--radius-md, 10px);
   position: relative;
-  transition: all var(--transition-base, 250ms ease);
+  transition: color var(--transition-base, 250ms ease), background-color var(--transition-base, 250ms ease);
 }
 
 .nav-link:hover {
@@ -198,6 +198,7 @@
 .close-modal-btn:hover {
   background: var(--color-border, #e2e8f0);
   transform: rotate(90deg);
+  box-shadow: none;
 }
 
 .visual-search-modal h2 {
@@ -528,7 +529,8 @@
   border-radius: var(--radius-full, 9999px);
   font-size: 0.85rem;
   font-weight: 600;
-  transition: all var(--transition-base, 250ms ease);
+  transition: transform var(--transition-base, 250ms ease), box-shadow var(--transition-base, 250ms ease);
+  will-change: transform;
   box-shadow: var(--shadow-primary, 0 4px 14px rgba(233, 69, 96, 0.25));
   white-space: nowrap;
 }

@@ -106,7 +106,7 @@ app.use((req, res) => {
 });
 
 // ── Start Server ──────────────────────────────────────────
-app.listen(PORT, async () => {
+app.listen(PORT, "0.0.0.0", async () => {
   console.log(`\n🚀 Giftnity API Gateway running on http://localhost:${PORT}\n`);
   startReminderScheduler();
 })
